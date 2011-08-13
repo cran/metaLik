@@ -1,0 +1,9 @@
+export(metaLik, test.metaLik)
+S3method(profile, metaLik)
+S3method(print, metaLik)
+S3method(summary, metaLik)
+S3method(coef, metaLik)
+S3method(vcov, metaLik)
+
+
+
