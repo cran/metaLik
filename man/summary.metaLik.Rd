@@ -25,6 +25,8 @@ The function \code{summary.metaLik} computes and returns a list of informations 
 }
 
 \references{
+Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}. Forthcoming.
+
 Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
 }
 

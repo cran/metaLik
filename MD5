@@ -1,9 +1,10 @@
-b8f42ca0f885fbf3678754d75058a5f1 *DESCRIPTION
-f8e55810bbc6fbd1715005425e96ae87 *NAMESPACE
-ffcacefe4bcdafbbcf23d3eb402bd241 *R/metaLik.R
+cec927ec85f6ba4e652998dc4acc5dfe *DESCRIPTION
+9a2a6eadab9056ddd7f2fe3eea927776 *NAMESPACE
+98940541f841e77248f39370d16b3675 *R/metaLik.R
 17a5b293a88ccfb1e612a82390ebb34b *data/vaccine.RData
-3f6f25b23438bd4cdc15d5375efeef14 *man/metaLik.Rd
-827f570e901383ba1b8682ab60d3c013 *man/profile.metaLik.Rd
-c4554316e2f7d02fbd9c15003d8ad6f1 *man/summary.metaLik.Rd
-8eef7ffd59818f810b1212869002cac2 *man/test.metaLik.Rd
+952c42dde7800c92bd6740f50f9ae767 *man/metaLik.Rd
+f0463f6576e42b0c1d5874f3e12cfd2d *man/profile.metaLik.Rd
+6c2d9bdd5b28e66532f19c64f001a53a *man/residuals.metaLik.Rd
+3530cd4e17cdf0cdec89ebc29f3999de *man/summary.metaLik.Rd
+27d908717b80a0cf56842042fb91144d *man/test.metaLik.Rd
 60bfab5d926fb92032df4c3502347bd8 *man/vaccine.Rd

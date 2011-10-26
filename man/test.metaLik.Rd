@@ -39,7 +39,7 @@ A list with the following components:
 \references{
 Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
 
-Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. Preprint. 
+Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}. Forthcoming. 
 }
 \author{
 Annamaria Guolo and Cristiano Varin.
@@ -52,7 +52,6 @@ Function \code{\link{profile.metaLik}} for constructing confidence intervals.
 \examples{
 data(vaccine)
 m <- metaLik(y~latitude, data=vaccine, sigma2=vaccine$sigma2)
-print(m)
 ## significance test for the intercept coefficient
 test.metaLik(m)
 ## significance test for the 'latitude' coefficient

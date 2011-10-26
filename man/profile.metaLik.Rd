@@ -24,6 +24,8 @@ Computes confidence intervals for a scalar component of the fixed-effects vector
 }
 
 \references{
+Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}. Forthcoming.
+
 Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
 }
 \author{
@@ -37,7 +39,6 @@ Function \code{\link{test.metaLik}} for hypothesis testing.
 \examples{
 data(vaccine)
 m <- metaLik(y~latitude, data=vaccine, sigma2=vaccine$sigma2)
-m
 ## significance test for the 'latitude' coefficient
 test.metaLik(m, param=2)
 ## 95% confidence interval for the 'latitude' coefficient

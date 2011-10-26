@@ -48,7 +48,7 @@ DerSimonian, R. and Laird, N. (1986). Meta-analysis in clinical trials. \emph{Co
 
 Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
 
-Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. Preprint. 
+Guolo, A. (2011). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}. Forthcoming. 
 }
 \author{
 Annamaria Guolo and Cristiano Varin.
@@ -56,7 +56,7 @@ Annamaria Guolo and Cristiano Varin.
 \seealso{
 Function \code{\link{summary.metaLik}} for summaries.
 
-The generic functions \code{\link{coef}}, \code{\link{confint}} and \code{\link{vcov}}. 
+The generic functions \code{\link{coef}}, \code{\link{confint}}, \code{\link{vcov}}, \code{\link{model.matrix}}, \code{\link{model.frame}}, \code{\link{logLik}}, and \code{\link{residuals}}. 
 
 Function \code{\link{test.metaLik}} for hypothesis testing.
 
