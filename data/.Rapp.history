@@ -1,0 +1,554 @@
+values
+help(smooth.spline)
+coef(fitted)
+profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){#
+#
+    if(class(fitted)!="metaLik")#
+        stop("\nfunction designed for 'metaLik' objects")#
+    if(is.character(param)){#
+      pnames <- names(coef(fitted))#
+      param <- match(param, pnames, nomatch=NA)#
+    }#
+    if(missing(param) || is.na(param)){#
+        param <- 1L#
+        warning("\nassumed confidence interval for intercept")#
+    }    #
+    if(length(param)>1 || param>length(coef(fitted)) || !is.numeric(param))#
+        stop("\n'param' must be one single fixed-effects component")#
+    par.mle <- coef(fitted)[param]#
+    se.mle <- sqrt(as.matrix(vcov(fitted))[param, param])#
+    values <- seq(from=par.mle-5*se.mle, to=par.mle+5*se.mle, length=50)#
+    rs <- rskovs <- rep(NA, length(values))#
+    for(i in 1:length(values)){#
+        test.res <- try(test.metaLik(fitted, param, values[i], print=FALSE))#
+        if(!inherits(test.res, "try-error")){#
+            rs[i] <- test.res["rtheta"]#
+            rskovs[i] <- test.res["rskov"]#
+        }#
+    }#
+    if(any(is.na(c(rs,rskovs))))#
+      stop("cannot compute profile likelihood for converge problems.\n")#
+    smooth.r <- smooth.spline(rs, values)#
+    smooth.rskov <- smooth.spline(rskovs, values)#
+    up.r <- predict(smooth.r, x=qnorm((1-level)/2))$y#
+    lo.r <- predict(smooth.r, x=qnorm((1+level)/2))$y#
+    up.rskov <- predict(smooth.rskov, x=qnorm((1-level)/2))$y#
+    lo.rskov <- predict(smooth.rskov, x=qnorm((1+level)/2))$y#
+    par.name <- names(coef(fitted))[param]#
+#
+    if(display){#
+        plot(smooth.spline(values, rs), type="l", ylim=c(min(rs, rskovs), max(rs, rskovs)), ylab="pivot", xlab=par.name, bty="n")#
+        lines(smooth.spline(values[is.finite(rskovs)], rskovs[is.finite(rskovs)]), col="red")#
+        legend(max(up.r, up.rskov), max(rs, rskovs), c("First-order", "Skovgaard"), cex=0.8, col=c("black", "red"), lty=c(1,1), bty="n")#
+        segments(lo.r, min(rs, rskovs)-10, lo.r, qnorm((1+level)/2), lty=2)#
+        segments(up.r, min(rs, rskovs)-10, up.r, qnorm((1-level)/2), lty=2)#
+        segments(lo.rskov, min(rs, rskovs)-10, lo.rskov, qnorm((1+level)/2), lty=2, col="red")#
+        segments(up.rskov, min(rs, rskovs)-10, up.rskov, qnorm((1-level)/2), lty=2, col="red")#
+        abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')#
+        abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')#
+      }#
+    tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)#
+    rownames(tab) <- c("signed logLRT", "Skovgaard")#
+    colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, "%", sep=""))#
+    cat("\nConfidence interval for parameter", par.name, "\n\n")#
+    print(tab)#
+#
+    res <- structure(list(rthetas=rs, rskovs=rskovs, lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))#
+    invisible(res)#
+}
+Q
+profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){#
+#
+    if(class(fitted)!="metaLik")#
+        stop("\nfunction designed for 'metaLik' objects")#
+    if(is.character(param)){#
+      pnames <- names(coef(fitted))#
+      param <- match(param, pnames, nomatch=NA)#
+    }#
+    if(missing(param) || is.na(param)){#
+        param <- 1L#
+        warning("\nassumed confidence interval for intercept")#
+    }    #
+    if(length(param)>1 || param>length(coef(fitted)) || !is.numeric(param))#
+        stop("\n'param' must be one single fixed-effects component")#
+    par.mle <- coef(fitted)[param]#
+    se.mle <- sqrt(as.matrix(vcov(fitted))[param, param])#
+    values <- seq(from=par.mle-5*se.mle, to=par.mle+5*se.mle, length=50)#
+    rs <- rskovs <- rep(NA, length(values))#
+    for(i in 1:length(values)){#
+        test.res <- try(test.metaLik(fitted, param, values[i], print=FALSE))#
+        if(!inherits(test.res, "try-error")){#
+            rs[i] <- test.res["rtheta"]#
+            rskovs[i] <- test.res["rskov"]#
+        }#
+    }#
+    if(any(is.na(c(rs,rskovs))))#
+      stop("cannot compute profile likelihood for converge problems.\n")#
+    smooth.r <- smooth.spline(rs, values)#
+    smooth.rskov <- smooth.spline(rskovs, values)#
+    up.r <- predict(smooth.r, x=qnorm((1-level)/2))$y#
+    lo.r <- predict(smooth.r, x=qnorm((1+level)/2))$y#
+    up.rskov <- predict(smooth.rskov, x=qnorm((1-level)/2))$y#
+    lo.rskov <- predict(smooth.rskov, x=qnorm((1+level)/2))$y#
+    par.name <- names(coef(fitted))[param]#
+#
+    if(display){#
+        plot(smooth.spline(values, rs), type="l", ylim=c(min(rs, rskovs), max(rs, rskovs)), ylab="pivot", xlab=par.name, bty="n")#
+        lines(smooth.spline(values[is.finite(rskovs)], rskovs[is.finite(rskovs)]), col="red")#
+        legend(max(up.r, up.rskov), max(rs, rskovs), c("First-order", "Skovgaard"), cex=0.8, col=c("black", "red"), lty=c(1,1), bty="n")#
+        segments(lo.r, min(rs, rskovs)-10, lo.r, qnorm((1+level)/2), lty=2)#
+        segments(up.r, min(rs, rskovs)-10, up.r, qnorm((1-level)/2), lty=2)#
+        segments(lo.rskov, min(rs, rskovs)-10, lo.rskov, qnorm((1+level)/2), lty=2, col="red")#
+        segments(up.rskov, min(rs, rskovs)-10, up.rskov, qnorm((1-level)/2), lty=2, col="red")#
+        abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')#
+        abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')#
+      }#
+    tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)#
+    rownames(tab) <- c("signed logLRT", "Skovgaard")#
+    colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, "%", sep=""))#
+    cat("\nConfidence interval for parameter", par.name, "\n\n")#
+    print(tab)#
+#
+    res <- structure(list(rthetas=rs, rskovs=rskovs, lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))#
+    invisible(res)#
+}
+profile(m1,1)
+profile(m1,2)
+profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){#
+#
+    if(class(fitted)!="metaLik")#
+        stop("\nfunction designed for 'metaLik' objects")#
+    if(is.character(param)){#
+      pnames <- names(coef(fitted))#
+      param <- match(param, pnames, nomatch=NA)#
+    }#
+    if(missing(param) || is.na(param)){#
+        param <- 1L#
+        warning("\nassumed confidence interval for intercept")#
+    }    #
+    if(length(param)>1 || param>length(coef(fitted)) || !is.numeric(param))#
+        stop("\n'param' must be one single fixed-effects component")#
+    par.mle <- coef(fitted)[param]#
+    se.mle <- sqrt(as.matrix(vcov(fitted))[param, param])#
+    values <- seq(from=par.mle-5*se.mle, to=par.mle+5*se.mle, length=30)#
+    rs <- rskovs <- rep(NA, length(values))#
+    for(i in 1:length(values)){#
+        test.res <- try(test.metaLik(fitted, param, values[i], print=FALSE))#
+        if(!inherits(test.res, "try-error")){#
+            rs[i] <- test.res["rtheta"]#
+            rskovs[i] <- test.res["rskov"]#
+        }#
+    }#
+    if(any(is.na(c(rs,rskovs))))#
+      stop("cannot compute profile likelihood for converge problems.\n")#
+    smooth.r <- smooth.spline(rs, values)#
+    smooth.rskov <- smooth.spline(rskovs, values)#
+    up.r <- predict(smooth.r, x=qnorm((1-level)/2))$y#
+    lo.r <- predict(smooth.r, x=qnorm((1+level)/2))$y#
+    up.rskov <- predict(smooth.rskov, x=qnorm((1-level)/2))$y#
+    lo.rskov <- predict(smooth.rskov, x=qnorm((1+level)/2))$y#
+    par.name <- names(coef(fitted))[param]#
+#
+    if(display){#
+        plot(smooth.spline(values, rs), type="l", ylim=c(min(rs, rskovs), max(rs, rskovs)), ylab="pivot", xlab=par.name, bty="n")#
+        lines(smooth.spline(values[is.finite(rskovs)], rskovs[is.finite(rskovs)]), col="red")#
+        legend(max(up.r, up.rskov), max(rs, rskovs), c("First-order", "Skovgaard"), cex=0.8, col=c("black", "red"), lty=c(1,1), bty="n")#
+        segments(lo.r, min(rs, rskovs)-10, lo.r, qnorm((1+level)/2), lty=2)#
+        segments(up.r, min(rs, rskovs)-10, up.r, qnorm((1-level)/2), lty=2)#
+        segments(lo.rskov, min(rs, rskovs)-10, lo.rskov, qnorm((1+level)/2), lty=2, col="red")#
+        segments(up.rskov, min(rs, rskovs)-10, up.rskov, qnorm((1-level)/2), lty=2, col="red")#
+        abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')#
+        abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')#
+      }#
+    tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)#
+    rownames(tab) <- c("signed logLRT", "Skovgaard")#
+    colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, "%", sep=""))#
+    cat("\nConfidence interval for parameter", par.name, "\n\n")#
+    print(tab)#
+#
+    res <- structure(list(rthetas=rs, rskovs=rskovs, lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))#
+    invisible(res)#
+}
+profile(m1,2)
+profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){#
+#
+    if(class(fitted)!="metaLik")#
+        stop("\nfunction designed for 'metaLik' objects")#
+    if(is.character(param)){#
+      pnames <- names(coef(fitted))#
+      param <- match(param, pnames, nomatch=NA)#
+    }#
+    if(missing(param) || is.na(param)){#
+        param <- 1L#
+        warning("\nassumed confidence interval for intercept")#
+    }    #
+    if(length(param)>1 || param>length(coef(fitted)) || !is.numeric(param))#
+        stop("\n'param' must be one single fixed-effects component")#
+    par.mle <- coef(fitted)[param]#
+    se.mle <- sqrt(as.matrix(vcov(fitted))[param, param])#
+    values <- seq(from=par.mle-5*se.mle, to=par.mle+5*se.mle, length=100)#
+    rs <- rskovs <- rep(NA, length(values))#
+    for(i in 1:length(values)){#
+        test.res <- try(test.metaLik(fitted, param, values[i], print=FALSE))#
+        if(!inherits(test.res, "try-error")){#
+            rs[i] <- test.res["rtheta"]#
+            rskovs[i] <- test.res["rskov"]#
+        }#
+    }#
+    if(any(is.na(c(rs,rskovs))))#
+      stop("cannot compute profile likelihood for converge problems.\n")#
+    smooth.r <- smooth.spline(rs, values)#
+    smooth.rskov <- smooth.spline(rskovs, values)#
+    up.r <- predict(smooth.r, x=qnorm((1-level)/2))$y#
+    lo.r <- predict(smooth.r, x=qnorm((1+level)/2))$y#
+    up.rskov <- predict(smooth.rskov, x=qnorm((1-level)/2))$y#
+    lo.rskov <- predict(smooth.rskov, x=qnorm((1+level)/2))$y#
+    par.name <- names(coef(fitted))[param]#
+#
+    if(display){#
+        plot(smooth.spline(values, rs), type="l", ylim=c(min(rs, rskovs), max(rs, rskovs)), ylab="pivot", xlab=par.name, bty="n")#
+        lines(smooth.spline(values[is.finite(rskovs)], rskovs[is.finite(rskovs)]), col="red")#
+        legend(max(up.r, up.rskov), max(rs, rskovs), c("First-order", "Skovgaard"), cex=0.8, col=c("black", "red"), lty=c(1,1), bty="n")#
+        segments(lo.r, min(rs, rskovs)-10, lo.r, qnorm((1+level)/2), lty=2)#
+        segments(up.r, min(rs, rskovs)-10, up.r, qnorm((1-level)/2), lty=2)#
+        segments(lo.rskov, min(rs, rskovs)-10, lo.rskov, qnorm((1+level)/2), lty=2, col="red")#
+        segments(up.rskov, min(rs, rskovs)-10, up.rskov, qnorm((1-level)/2), lty=2, col="red")#
+        abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')#
+        abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')#
+      }#
+    tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)#
+    rownames(tab) <- c("signed logLRT", "Skovgaard")#
+    colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, "%", sep=""))#
+    cat("\nConfidence interval for parameter", par.name, "\n\n")#
+    print(tab)#
+#
+    res <- structure(list(rthetas=rs, rskovs=rskovs, lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))#
+    invisible(res)#
+}
+profile(m1,2)
+debug(profile.metaLik)
+profile(m1,2)
+c
+plot(values, rs)
+point(values, rskovs, col="red")
+points(values, rskovs, col="red")
+rskovs
+Q
+profile(m1,1)
+c
+profile(m1,1)
+par.mle
+se.mle
+test.res
+debug(test.metaLik)
+mle
+theta.constr
+theta.mle
+A
+B
+C
+D
+C*D
+Smatrix(theta.mle, theta.constr)
+E
+u
+rtheta
+c
+values
+Q
+profile(m1,2)
+values
+test.res <- try(test.metaLik(fitted, param, values[49], print = FALSE))
+theta.mle
+mle
+theta.constr
+theta.mle
+rtheta
+A
+B
+C
+D
+E
+u
+rkosv
+rskov
+rtheta
+rtheta+1/rtheta*log(u/rtheta)
+u/rtheta
+1/rtheta
+Q
+library(metaLik)
+example(metaLik)
+profile(m, 1)
+profile(m, 2)
+m1 <- metaLik(y~abs(latitude), data=vaccine, sigma2=vaccine$sigma2)
+profile(m1,2)
+profile(m1,1)
+profile(m1,2)
+profile(m1,1)
+debug(metaLik:::profile.metaLik)
+profile(m1,1)
+values
+c
+rs
+rskovs
+try(test.metaLik(fitted, param, values[26], print = FALSE))
+debug(test.metaLIk)
+debug(test.metaLik)
+try(test.metaLik(fitted, param, values[26], print = FALSE))
+mle
+theta.constr
+value
+rtheta
+sign(theta.mle[param] - theta.constr[param])
+theta.mle
+theta.mle[param]
+theta.constr[param]
+theta.constr
+theta.mle
+rtheta
+A
+B
+C
+D
+E
+u <- (log(A)+log(B)+log(C)+log(D)+log(E))
+u
+u <- A * B * C * D * E
+u
+rtheta
+log(u/theta)
+log(u/rtheta)
+rtheta + 1/rtheta * log(u2/rtheta)
+rtheta
+rtheta + 1/rtheta * log(1)
+rtheta + 1/rtheta * log(1.1)
+rtheta + 1/rtheta * log(.9)
+rtheta + 1/rtheta * log(.99)
+rtheta + 1/rtheta * log(1.01)
+rtheta + 1/rtheta * log(1.02)
+try(test.metaLik(fitted, param, values[26], print = FALSE))
+profile(m1, 1)
+try(test.metaLik(fitted, param, values[26], print = FALSE))
+Q
+profile(m1, 1)
+class(fitted)
+test.metaLik(fitted, param, values[26], print = FALSE)
+debug(.computeMLE)
+solve(t(X) %*% V %*% X)
+beta.new <- solve(t(X) %*% V %*% X) %*% t(X) %*% V %*% y
+beta.new
+beta.old
+library(nlme)
+library(MASS)
+help(lm)
+V
+beta.new <- solve(t(X) %*% V %*% X) %*% t(X) %*% V %*% y
+beta.new <- coef(lm(y~X, weights=diag(V)))
+beta.new
+beta.new <- solve(t(X) %*% V %*% X) %*% t(X) %*% V %*% y
+beta.new
+beta.new <- coef(lm(y~X-1, weights=diag(V)))
+beta.new
+c
+convergence
+mle
+start.theta
+glik(mle)
+theta.mle
+theta.constr
+matrix(theta.constr)[-param, #
+    -param])
+Jmatrix(theta.constr)[-param, #
+    -param])
+Jmatrix(theta.constr)[-param,-param]
+Jmatrix(theta.mle)[-param,-param]
+Jmatrix(theta.constr)[-param,-param]
+Imatrix(theta.constr)[-param,-param]
+Imatrix(theta.constr)
+Jmatrix(theta.constr)
+param
+Jmatrix(theta.mle)
+Imatrix(theta.mle)
+A
+B
+C
+D
+E
+C
+D
+C*D
+log(C)+log(D)
+exp(log(C)+log(D))
+A
+u
+u2
+u2/rtheta
+Q
+m1 <- metaLik(y~I(plogis(abs(latitude)), data=vaccine, sigma2=vaccine$sigma2)
+)
+m1 <- metaLik(y~I(plogis(abs(latitude))), data=vaccine, sigma2=vaccine$sigma2)
+c
+m1 <- metaLik(y~I(plogis(abs(latitude))), data=vaccine, sigma2=sigma2/(1+exp(latitude))^4)
+help(solve)
+m1 <- metaLik(y~I(plogis(abs(latitude))), data=vaccine, sigma2=sigma2/(1+exp(latitude))^4)
+debug(test.metaLik)
+m1 <- metaLik(y~I(abs(latitude)), data=vaccine, sigma2=sigma2)
+c
+debug(test.metaLik)
+m1 <- metaLik(y~I(abs(latitude)), data=vaccine, sigma2=sigma2)
+c
+profile(m, 1)
+debug(test.metaLik)
+try(test.metaLik(fitted, param, values[26], print = FALSE))
+c
+A
+(solve(Smatrix(theta.mle, theta.constr)) %*% qvect(theta.mle, #
+    theta.constr))
+A[1,1]
+(solve(Smatrix(theta.mle, theta.constr)) %*% qvect(theta.mle, #
++     theta.constr))[1,1]
+Q
+test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "less", "greater"), print=TRUE){#
+#
+    digits <- max(3, getOption("digits") - 3)#
+     if(class(object)!="metaLik")#
+        stop("\nfunction designed for 'metaLik' objects")#
+    if(is.character(param)){#
+      pnames <- names(coef(object))#
+      param <- match(param, pnames, nomatch=NA)#
+    }#
+    if(missing(param) || is.na(param)){#
+        param <- 1L#
+        warning("\nassumed confidence interval for intercept")#
+    }    #
+    if(length(param)>1 || param>length(coef(object)) || !is.numeric(param))#
+        stop("\n'param' must be one single fixed-effects component")#
+    alternative <- match.arg(alternative)#
+    if(!missing(value) && (length(value)!= 1 || is.na(value)))#
+        stop("\n'value' must be a single number")#
+    if(class(object)!="metaLik")#
+        stop("\n'object' must be a metaLik object")#
+    y <- object$y#
+    X <- object$X#
+    offset <- object$offset#
+    y <- y-offset #
+    sigma2 <- object$sigma2#
+    ntheta <- NCOL(X)+1#
+    theta.mle <- object$mle#
+    if(param>=ntheta || param<=0)#
+        stop("\n'param' must be the index of one fixed effect parameter")#
+   #
+    ## constrained maximum likelihood estimation#
+    terms <- .likTerms(y, X, sigma2)#
+    lik <- terms$lik#
+    glik <- terms$glik#
+    Jmatrix <- terms$Jmatrix#
+    Imatrix <- terms$Imatrix#
+    Smatrix <- terms$Smatrix#
+    qvect <- terms$qvect#
+#
+    start.theta <- theta.mle#
+    start.theta[param] <- value#
+    mle <- .computeMLE(y, X, sigma2, start.theta, param)#
+    if(!mle$convergence)#
+        stop("optim: convergence not reached.\n")   #
+    theta.constr <- mle$theta#
+    names(theta.constr) <- names(theta.mle) #
+    #
+    ## likelihood ratio test statistic (and Skovgaard correction)#
+    rtheta <- sign(theta.mle[param]-theta.constr[param])*sqrt(2*(lik(theta.mle)-lik(theta.constr))) #
+    A <- ( solve( Smatrix(theta.mle, theta.constr), tol=1e-100 )%*%qvect(theta.mle, theta.constr) )[param]#
+    B <- det(Jmatrix(theta.mle))  #
+    C <- det( solve(Imatrix(theta.mle)) )#
+    D <- det( Smatrix(theta.mle, theta.constr) )#
+    E <- det( as.matrix(Jmatrix(theta.constr)[-param,-param] ) )  #
+    u <- A*C*D*sqrt(abs(B/E))#
+    rskov <- as.numeric(rtheta+1/rtheta*log(u/rtheta))#
+    if(alternative=="less"){#
+        pval.rtheta <- pnorm(rtheta)#
+        pval.rskov <- pnorm(rskov)#
+    }#
+    else if(alternative=="greater"){#
+         pval.rtheta <- pnorm(rtheta, lower.tail=FALSE)#
+         pval.rskov <- pnorm(rskov, lower.tail=FALSE)#
+    }#
+    else{#
+        pval.rtheta <- 2*pnorm(-abs(rtheta))#
+        pval.rskov <- 2*pnorm(-abs(rskov))#
+    }#
+    if(print){#
+        cat("\nSigned profile log-likelihood ratio test for parameter ", names(theta.mle[param]), sep="", "\n")#
+        cat("\nFirst-order statistic")#
+        cat("\nr:", formatC(rtheta, digits), ", p-value:", formatC(pval.rtheta, digits), sep="")#
+        cat("\nSkovgaard's statistic")#
+        cat("\nrSkov:", formatC(rskov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")#
+        if(alternative=="two.sided")#
+            cat("\nalternative hypothesis: parameter is different from ", round(value, digits), sep="", "\n")#
+        else#
+            cat("\nalternative hypothesis: parameter is ", alternative, " than ", round(value, digits), sep="", "\n")#
+    }#
+    ## bye#
+    ans <- c(rtheta=rtheta, pvalue.rtheta=pval.rtheta, rskov=rskov, pvalue.rskov=pval.rskov)#
+    invisible(ans)#
+}
+m1 <- metaLik(y~I(abs(latitude)), data=vaccine, sigma2=sigma2)
+c
+profile(m1, 1)
+c
+test.metaLik(fitted, param, values[26], print = FALSE)
+c
+Q
+q()
+library(metaLik)
+m1 <- metaLik(y~abs(latitude), data=vaccine, sigma2=vaccine$sigma2)
+summary(m1)
+profile(m1, 1)
+profile(m1, 2)
+test.metaLik
+test.metaLik(m1, 2, -.033)
+test.metaLik(m1, 2, -.05)
+test.metaLik(m1, 2, -.1)
+test.metaLik(m1, 2, 0.5)
+test.metaLik(m1, 2, 0.1)
+test.metaLik(m1, 2, -0.2)
+test.metaLik(m1, 2, -0.06)
+test.metaLik(m1, 2, -0.09)
+test.metaLik(m1, 2, -0.01)
+test.metaLik(m1, 2, -0.03)
+test.metaLik(m1, 2, -0.033)
+test.metaLik(m1, 2, -0.03)
+test.metaLik(m1, 2, 0)
+coef(m1)
+library(metafor)
+vaccine
+library(metafor)
+data(dat.bcg)
+?dat.bcg
+dat <- escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, #
+              data=dat.bcg, append=TRUE)#
+dat
+vaccine2 <- data.frame(y=dat$yi, x=dat$ablat, sigma2=dat$vi)
+vaccine2
+m2 <- metaLik(y~x, sigma2=sigma2, data=vaccine2)
+profile(m2,2)
+profile(m2,1)
+summary(m2)
+summary(m)
+vaccine
+vaccine2
+vaccine2$year <- vaccine
+vaccine2$year
+vaccine2$year <- vaccine$year
+vaccine2
+vaccine
+vaccine2
+colnames(vaccine2) <- c("y", "latitude", "sigma2", "year")
+vaccine2
+vaccine2 <- vaccine2[,c(1,2,4,3)]
+vaccine2
+vaccine <- vaccine2
+vaccine
+save(vaccine, "vaccine.RData")
+save(vaccine, file="vaccine.RData")
+is.data.frame(vaccine)

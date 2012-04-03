@@ -1,0 +1,29 @@
+citHeader("To cite metaLik in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Higher-order likelihood inference in meta-analysis and meta-regression",
+  author       = personList(as.person("Annamaria Guolo")),
+  year         = "2012",
+  journal      = "Statistics in Medicine",
+  number       = "31",
+  pages        = "313--327", 
+  
+  textVersion  = 
+  paste("Guolo, A. (2012).", 
+	"Higher-order likelihood inference in meta-analysis and meta-regression.",
+ 	"Statistics in Medicine 31, 313-327.")
+)
+
+citEntry(entry = "TechReport",
+  title        = "The R Package metaLik for Likelihood Inference in Meta-Analysis",
+  author       = personList(as.person("Annamaria Guolo"), as.person("Cristiano Varin")),
+ institution  = "Technical Report DAIS, Universit\\\'a Ca' Foscari, Venice",	
+  year         = "2011",
+  type         = "Technical Report",
+  number       = "2011-11",
+  
+  textVersion  = 
+  paste("Guolo, A. and Varin, C. (2011).", 
+	"The R Package metaLik for Likelihood Inference in Meta-Analysis.",
+ 	"Technical report DAIS, Universit\\\'a Ca' Foscari, Venice."),	
+)
