@@ -1,4 +1,4 @@
-4b31f927764b22e503b4edfc0901a9b5 *DESCRIPTION
+31997518ad64694f48231b7683fe3122 *DESCRIPTION
 9a2a6eadab9056ddd7f2fe3eea927776 *NAMESPACE
 059f81ddb39c7ce19dcfc5de7d085e0c *R/metaLik.R
 fdba82b33961fa260cd8593629948c46 *data/albumin.RData
@@ -6,13 +6,13 @@ ea76aa2e864c203a87d26671b5911c90 *data/cholesterol.RData
 730523fb04ff398aa4c70d9da07bd008 *data/diuretics.RData
 4d1d6b153763df420b4b81d851731dc4 *data/education.RData
 17a5b293a88ccfb1e612a82390ebb34b *data/vaccine.RData
-56ac4ca315c1589d59007f88b35c496a *inst/CITATION
-01ebdc168b1886ca9c2507bb061c159e *man/albumin.Rd
-39045516b0e788c11994b2d241e930f7 *man/cholesterol.Rd
-d3c1aa5eceaae4b49567a3039d0058f4 *man/diuretics.Rd
+d492ebde4f30833644c469bdda2fdb15 *inst/CITATION
+3f010eb2e6bc13a95169d9d3a68eb680 *man/albumin.Rd
+ab0224e291edec4a16ab11df2510b8f4 *man/cholesterol.Rd
+15445620d7c863405c74e3f0f54c7f3f *man/diuretics.Rd
 fc98f32550fa0a58b739b8b7ad40ae9e *man/education.Rd
-925e8dffb2bcd14ac84d4903ebbc87bc *man/metaLik.Rd
-05350f26a653a80d5a5cff35857e1a37 *man/profile.metaLik.Rd
-eb3f541708b016f47d9386785c6bdeb8 *man/summary.metaLik.Rd
-2feda8979ade78522e7120229c83e453 *man/test.metaLik.Rd
+0edd93a31b76b334c22fa223796c8a53 *man/metaLik.Rd
+b7d3714b687941141760a43dd57247e3 *man/profile.metaLik.Rd
+daedd0483e42683bbad691497e96c642 *man/summary.metaLik.Rd
+25686aadd7caaeda7e80948dc0db0df6 *man/test.metaLik.Rd
 4b2fd5f6400c3b117123ca287c573914 *man/vaccine.Rd

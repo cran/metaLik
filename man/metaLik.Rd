@@ -4,7 +4,7 @@
 First- and higher-order likelihood inference in meta-analysis and meta-regression models
 }
 \description{
-Implements first-order and higher-order likelihood methods for inference in meta-analysis and meta-regression models, as described in Guolo (2012). Higher-order asymptotics refer to the higher-order adjustment to the log-likelihood ratio statistic for inference on a scalar component of interest as proposed by Skovgaard (1996).
+Implements first-order and higher-order likelihood methods for inference in meta-analysis and meta-regression models, as described in Guolo (2012). Higher-order asymptotics refer to the higher-order adjustment to the log-likelihood ratio statistic for inference on a scalar component of interest as proposed by Skovgaard (1996). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package. 
 }
 \usage{
 metaLik(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2)
@@ -25,11 +25,11 @@ metaLik(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma
 \item{weights}{a vector of the inverse of within-study estimated variances. The length of the vector must be the same of the number of studies. If \code{sigma2} is supplied, the value of \code{weights} is discarded.}
 }
 \details{
-Models for \code{metaLik.fit} are specified simbolically. A typical model has the form \code{y ~ x1 + x2 + \ldots + xJ}, where \code{y} is the continuous response term and \code{xj} is the j-th covariate available at the aggregated meta-analysis level for each study, \code{j, 1, \ldots, p}. The case of no \code{xj} corresponds to the classical meta-analysis model specified as \code{y~1}.
+Models for \code{metaLik.fit} are specified simbolically. A typical model has the form \code{y ~ x1 + \ldots + xJ}, where \code{y} is the continuous response term and \code{xj} is the j-th covariate available at the aggregated meta-analysis level for each study. The case of no covariates corresponds to the classical meta-analysis model specified as \code{y~1}.
 
 Within-study variances are specified through \code{sigma2}: the rare case of equal within-study variances implies Skovgaard's adjustment reaching a third-order accuracy. 
 
-If the maximum likelihood estimate of \eqn{\tau^2} is significantly non-different from zero at 5\% level, then the random-effect is dropped and fixed-effects parameters are re-estimated. The significance of the maximum likelihood estimate of \eqn{\tau^2} is evaluated through a parametric bootstrap score test. 
+If the maximum likelihood estimate of \eqn{\tau^2} is significantly non-different from zero at 5\% level, then the random-effect is dropped and fixed-effects parameters are re-estimated. The significance of the maximum likelihood estimate of \eqn{\tau^2} is evaluated through a parametric bootstrap score test. See Guolo and Varin (2012).
 
 The fixed-effects estimate through DerSimonian and Laird's (1986) approach is also supplied. In this case, the method of moments estimator of the heterogeneity parameter \eqn{\tau^2} is considered. 
 }
@@ -58,11 +58,13 @@ An object of class \code{"metaLik"} with the following components:
 Generic functions \code{\link{coefficients}}, \code{\link{vcov}}, \code{\link{logLik}}, \code{\link{fitted}}, \code{\link{residuals}} can be used to extract fitted model quantities. 
 }
 \references{
-DerSimonian, R. and Laird, N. (1986). Meta-analysis in clinical trials. \emph{Controlled Clinical Trials}, \bold{7}, 177--188.
+DerSimonian, R. and Laird, N. (1986). Meta-Analysis in Clinical Trials. \emph{Controlled Clinical Trials}, \bold{7}, 177--188.
 
-Guolo, A. (2012). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}, \bold{31}, 313--327. 
+Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
 
-Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
+Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software}, \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
+
+Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli}, \bold{2}, 145--165.
 }
 \author{
 Annamaria Guolo and Cristiano Varin.

@@ -15,7 +15,7 @@ Data from nine randomized trials on prevention of pre-eclampsia with diuretics.
 }
 }
 \source{
-Biggerstaff, B. and Tweedie, R. (1997). Incorporating variability in estimates of heterogeneity in the random effects model in meta-analysis. \emph{Statistics in Medicine} \bold{16}, 753--768.
+Biggerstaff, B. and Tweedie, R. (1997). Incorporating Variability in Estimates of Heterogeneity in the Random Effects Model in Meta-Analysis. \emph{Statistics in Medicine} \bold{16}, 753--768.
 }
 \examples{
 data(diuretics)

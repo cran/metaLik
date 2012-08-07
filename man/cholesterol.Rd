@@ -16,9 +16,9 @@ Data from 28 randomized trials about the effect of serum cholesterol reduction o
 }
 }
 \source{
-Law, M.R., Wald, N.J. and Thmpson, S.G. (1994). By how much and how quickly does reduction in serum cholesterol concentration lower risk of ischaemic heart disease? \emph{British Medical Journal} \bold{308}, 367--373.
+Law, M.R., Wald, N.J., and Thompson, S.G. (1994). By How Much and How Quickly Does Reduction in Serum Cholesterol Concentration Lower Risk of Ischaemic Heart Disease? \emph{British Medical Journal} \bold{308}, 367--373.
 
-Thompson, S.G. and Sharp, S.J. (1999). Explaining heterogeneity in meta-analysis: a comparison of methods. \emph{Statistics in Medicine} \bold{18}, 2693--2708.
+Thompson, S.G. and Sharp, S.J. (1999). Explaining Heterogeneity in Meta-Analysis: A Comparison of Methods. \emph{Statistics in Medicine} \bold{18}, 2693--2708.
 }
 \examples{
 data(cholesterol)

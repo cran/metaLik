@@ -4,7 +4,7 @@
 Confidence intervals for a scalar fixed-effect component in meta-analysis and meta-regression models
 }
 \description{
-Computes confidence intervals for a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's (1996) adjustment, as described in Guolo (2012).
+Computes confidence intervals for a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's (1996) adjustment, as described in Guolo (2012). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package.
 }
 \usage{
 \method{profile}{metaLik}(fitted, param=1, level=0.95, display=TRUE, ...)
@@ -24,9 +24,11 @@ Computes confidence intervals for a scalar component of the fixed-effects vector
 }
 
 \references{
-Guolo, A. (2012). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
+Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
 
-Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
+Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software}, \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
+
+Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli}, \bold{2}, 145--165.
 }
 \author{
 Annamaria Guolo and Cristiano Varin.

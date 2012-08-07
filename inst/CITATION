@@ -1,6 +1,25 @@
 citHeader("To cite metaLik in publications use:")
 
 citEntry(entry = "Article",
+  title        = "The {R} Package {metaLik} for Likelihood Inference in Meta-Analysis",
+  author       = personList(as.person("Annamaria Guolo"),
+                   as.person("Cristiano Varin")),
+  journal      = "Journal of Statistical Software",
+  year         = "2012",
+  volume       = "50",
+  number       = "7",
+  pages        = "1--14",
+  url          = "http://www.jstatsoft.org/v50/i07/",
+
+  textVersion  =
+  paste("Annamaria Guolo, Cristiano Varin (2012).",
+        "The R Package metaLik for Likelihood Inference in Meta-Analysis.",
+        "Journal of Statistical Software, 50(7), 1-14.",
+        "URL http://www.jstatsoft.org/v50/i07/.")
+)
+
+
+citEntry(entry = "Article",
   title        = "Higher-order likelihood inference in meta-analysis and meta-regression",
   author       = personList(as.person("Annamaria Guolo")),
   year         = "2012",
@@ -14,16 +33,3 @@ citEntry(entry = "Article",
  	"Statistics in Medicine 31, 313-327.")
 )
 
-citEntry(entry = "TechReport",
-  title        = "The R Package metaLik for Likelihood Inference in Meta-Analysis",
-  author       = personList(as.person("Annamaria Guolo"), as.person("Cristiano Varin")),
- institution  = "Technical Report DAIS, Universit\\\'a Ca' Foscari, Venice",	
-  year         = "2011",
-  type         = "Technical Report",
-  number       = "2011-11",
-  
-  textVersion  = 
-  paste("Guolo, A. and Varin, C. (2011).", 
-	"The R Package metaLik for Likelihood Inference in Meta-Analysis.",
- 	"Technical report DAIS, Universit\\\'a Ca' Foscari, Venice."),	
-)

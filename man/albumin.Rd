@@ -15,7 +15,7 @@ Data from four experiments about the percentage of albumin in the plasma protein
 }
 }
 \source{
-Meier, P. (1953). Variance of a weighted mean. \emph{Biometrics} \bold{9}, 59--73.
+Meier, P. (1953). Variance of a Weighted Mean. \emph{Biometrics} \bold{9}, 59--73.
 }
 \examples{
 data(albumin)

@@ -4,7 +4,7 @@
 Hypothesis testing on a scalar fixed-effect component in meta-analysis and meta-regression models
 }
 \description{
-Performs hypothesis testing on a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's (1996) adjustment, as described in Guolo (2012).
+Performs hypothesis testing on a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's (1996) adjustment, as described in Guolo (2012). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package.
 }
 \usage{
 test.metaLik(object, param=1, value=0, alternative=c("two.sided", 
@@ -22,7 +22,7 @@ test.metaLik(object, param=1, value=0, alternative=c("two.sided",
 Let \eqn{\theta} be the whole parameter vector. The signed profile log-likelihood ratio statistic for inference on scalar component \eqn{\beta} of \eqn{\theta} is
     \deqn{
 r(\beta) = sign(\hat{\beta}-\beta)\sqrt{2 \{l(\hat{\theta})-l(\theta)\} },}
-where \eqn{l()} is the log-likelihood function and \eqn{\hat{\theta}} is the maximum likelihood estimate of \eqn{\theta}.
+where \eqn{l} is the log-likelihood function and \eqn{\hat{\theta}} is the maximum likelihood estimate of \eqn{\theta}.
 The Skovgaard's (1996) adjustment is defined as
   \deqn{
 \overline r(\beta) = r(\beta) + \frac{1}{r(\beta)}\log\frac{u(\beta)}{r(\beta)},
@@ -39,9 +39,11 @@ A list with the following components:
 }
 
 \references{
-Guolo, A. (2012). Higher-order likelihood inference in meta-analysis and meta-regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
+Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
 
-Skovgaard, I. M. (1996). An explicit large-deviation approximation to one-parameter tests. \emph{Bernoulli}, \bold{2}, 145--165.
+Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software}, \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
+
+Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli}, \bold{2}, 145--165.
 }
 \author{
 Annamaria Guolo and Cristiano Varin.
