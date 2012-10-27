@@ -144,9 +144,7 @@ metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, wei
   ## parametric bootstrap test of homogeneity
   fit.fe <- lm(y~0+X, weights=1/sigma2)
   nboot <- 1000
-  boot.seed <- 123
   boot.sim <- replicate( nboot, rnorm(length(y), fitted(fit.fe), sqrt(sigma2)) )
-  set.seed(boot.seed)
   score.stat <- function(this.y, observed=FALSE){
     this.fit <- lm.wfit(x=X, y=this.y, w=1/sigma2)
     this.theta <- c(coef(this.fit), 0.0)
