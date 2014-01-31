@@ -20,15 +20,15 @@ Computes confidence intervals for a scalar component of the fixed-effects vector
 \code{profile.metaLik} computes confidence intervals for a scalar component of interest in the fixed-effects vector. See \code{\link{test.metaLik}} for more details about the first- and higher-order statistics.
 }
 \value{
-\code{profile.metaLik} returns a matrix with columns the endpoints of the confidence intervals at level \code{level} for the specified parameter according to the signed profile log-likelihood ratio statistic and the Skovgaard's (1996) statistic. In case of \code{display=TRUE}, the signed square root of the profile likelihood is plotted together with the horizontal dashed lines relative to the specified \code{level} and the corresponding confidence intervals. The package checks whether the maximum likelihood estimate of \eqn{\tau^2} is not significant (see \code{\link{metaLik}} for details): in this case, the random-effect is dropped and Skovgaard's correction vanishes.
+\code{profile.metaLik} returns a matrix with columns the endpoints of the confidence intervals at level \code{level} for the specified parameter according to the signed profile log-likelihood ratio statistic and the Skovgaard's statistic (Skovgaard, 1986). In case of \code{display=TRUE}, the signed square root of the profile likelihood is plotted together with the horizontal dashed lines relative to the specified \code{level} and the corresponding confidence intervals. The package checks whether there is significant between-study heterogeneity (see \code{\link{metaLik}} for details). In this case, Skovgaard's correction is dropped.
 }
 
 \references{
-Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
+Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine} \bold{31}, 313--327.
 
-Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software}, \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
+Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software} \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
 
-Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli}, \bold{2}, 145--165.
+Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli} \bold{2}, 145--165.
 }
 \author{
 Annamaria Guolo and Cristiano Varin.
@@ -49,7 +49,7 @@ profile(m, param="latitude")
 ## meta-regression
 data(cholesterol)
 m <- metaLik(heart_disease~chol_reduction, data=cholesterol, weights=1/sigma2)
-## no evidence of random-effects
+## no significant between-study heterogeneity
 ## significance test for the 'chol_reduction' coefficient
 test.metaLik(m, param=2)
 ## 95% confidence interval for the 'chol_reduction' coefficient

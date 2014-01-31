@@ -1,0 +1,6 @@
+Version 0.40.0
+-------------
+- bug in DL estimates fixed
+- Cochran’s Q test for between-study heterogeneity substitutes bootstrap score test
+- included simulation S3 method
+

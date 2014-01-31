@@ -1,92 +1,76 @@
 .likTerms <- function(y, X, sigma2){
 
-  ntheta <- NCOL(X)+1
-  ans <- list()
+    nbeta <- ncol(X)
+    ans <- list()
   
-  ans$lik <- function(theta, fixed=rep(NA, ntheta)){
+    ans$lik <- function(beta, tau2){
+
+        if(!all(is.finite(beta)))
+            return(NA)
+        v <- tau2+sigma2
+        res <- y-X%*%beta      
+        as.numeric( -0.5*sum(log(v))-0.5*t(res)%*%diag(1/v)%*%res )
+    }
+    ans$prof.tau2 <- function(tau2){
+        v <- sigma2+tau2
+        beta <- coef( lm.wfit(x = X, y = y, w = 1/v) )
+        res <- y-X%*%beta
+        as.numeric( -0.5*sum(log(v))-0.5*t(res)%*%diag(1/v)%*%res )
+    }
+    ans$Jmatrix <- function(beta, tau2){
     
-    all.theta <- fixed
-    all.theta[is.na(fixed)] <- theta
-    beta <- all.theta[-ntheta]
-    tau2 <- all.theta[ntheta]
-    v <- tau2+sigma2
-    if(tau2<0)
-      return(NA)
-    res <- y-X%*%beta      
-    -0.5*sum(log(v))-0.5*t(res)%*%diag(1/v)%*%res 
-  }
-  ans$glik <- function(theta, fixed=rep(NA, ntheta)){
+        npar <- nbeta+(tau2>0)
+        Info <- matrix(0, ncol=npar, nrow=npar)
+        v <- tau2+(sigma2)
+        res <- y-X%*%beta
+        Info[1:nbeta, 1:nbeta] <- t(X)%*%diag(1/v)%*%X
+        if(tau2 > 0){
+            Info[1:(npar-1), npar] <- t(X)%*%diag(1/v^2)%*%res
+            Info[npar, 1:(npar-1)] <- Info[1:(npar-1), npar]
+            Info[npar, npar] <- -0.5*sum(1/v^2)+t(res)%*%diag(1/v^3)%*%res
+        }
     
-    grad <- double(ntheta)
-    all.theta <- fixed
-    all.theta[is.na(fixed)] <- theta
-    beta <- all.theta[-ntheta]
-    tau2 <- all.theta[ntheta]
-    v <- tau2+sigma2
-    res <- y-X%*%beta 
-    grad[1:(ntheta-1)] <- t(res)%*%diag(1/v)%*%X
-    grad[ntheta] <- .5*( t(res)%*%diag(1/v^2)%*%res-sum(1/v) )
-    
-    grad[is.na(fixed)]
-    
-  }
-  ans$Jmatrix <- function(theta){
-    
-    beta <- matrix(theta[-ntheta], ncol=1)
-    tau2 <- theta[ntheta]
-    Info <- matrix(0, ncol=ntheta, nrow=ntheta)
-    v <- tau2+(sigma2)
-    res <- y-X%*%beta
-    Info[1:(ntheta-1), 1:(ntheta-1)] <- t(X)%*%diag(1/v)%*%(X)
-    Info[1:(ntheta-1), ntheta] <- t(X)%*%diag(1/v^2)%*%res
-    Info[ntheta, 1:(ntheta-1)] <- Info[1:(ntheta-1), ntheta]
-    Info[ntheta, ntheta] <- -0.5*sum(1/v^2)+t(res)%*%diag(1/v^3)%*%res    
-    
-    Info
-  }
-  ans$Imatrix <- function(theta){
+        Info
+    }
+    ans$Imatrix <- function(beta, tau2){
       
-    tau2 <- theta[ntheta]
-    Info <- matrix(0, ncol=ntheta, nrow=ntheta)
-    v <- tau2+sigma2
-    Info[1:(ntheta-1), 1:(ntheta-1)] <- t(X)%*%diag(1/v)%*%X
-    Info[ntheta, ntheta] <- 0.5*sum(1/v^2)
+        npar <- nbeta+(tau2>0)
+        Info <- matrix(0, ncol=npar, nrow=npar)
+        v <- tau2+sigma2
+        Info[1:nbeta, 1:nbeta] <- t(X)%*%diag(1/v)%*%X
+        if(tau2 > 0)
+            Info[npar, npar] <- 0.5*sum(1/v^2) 
     
-    Info
-  }
-  ans$Smatrix <- function(theta.mle, theta.constr){
-    
-    beta.mle <- matrix(theta.mle[-ntheta], ncol=1)
-    beta.constr <- matrix(theta.constr[-ntheta], ncol=1)
-    tau2 <- theta.constr[ntheta]
-    S <- matrix(0, ncol=ntheta, nrow=ntheta)
-    v <- tau2+sigma2
-    S[1:(ntheta-1), 1:(ntheta-1)] <- t(X)%*%diag(1/v)%*%X
-    S[1:(ntheta-1), ntheta] <- t(X)%*%diag(1/v^2)%*%X%*%(beta.mle-beta.constr)
-    S[ntheta, ntheta] <- 0.5*sum(1/v^2)
-    
-    S
-  }
-  ans$qvect <- function(theta.mle, theta.constr){
-    
-    beta.mle <- matrix(theta.mle[-ntheta], ncol=1)
-    beta.constr <- matrix(theta.constr[-ntheta], ncol=1)
-    tau2.mle <- theta.mle[ntheta]
-    tau2.constr <- theta.constr[ntheta]
-    qvect <- rep(0.0, ntheta)
-    v.mle <- tau2.mle+sigma2
-    v.constr <- tau2.constr+sigma2
-    qvect[1:(ntheta-1)] <- t(X)%*%diag(1/v.constr)%*%(X)%*%(beta.mle-beta.constr)
-    qvect[ntheta] <- -0.5*sum(1/v.mle-1/v.constr)
-    
-    qvect
-  }
-  class(ans) <- c("lik.metaLik")
-  ans
+        Info
+    }
+    ans$Smatrix <- function(beta.mle, tau2.mle, beta.constr, tau2.constr){
+
+        npar <- nbeta+1
+        S <- matrix(0, ncol=npar, nrow=npar)
+        v <- tau2.constr+sigma2
+        S[1:(npar-1), 1:(npar-1)] <- t(X)%*%diag(1/v)%*%X
+        S[1:(npar-1), npar] <- t(X)%*%diag(1/v^2)%*%X%*%(beta.mle-beta.constr)
+        S[npar, npar] <- 0.5*sum(1/v^2) 
+        
+        S
+    }
+    ans$qvect <- function(beta.mle, tau2.mle, beta.constr, tau2.constr){
+
+        npar <- nbeta+1 
+        qvect <- rep(0.0, npar)
+        v.mle <- tau2.mle+sigma2
+        v.constr <- tau2.constr+sigma2
+        qvect[1:(npar-1)] <- t(X)%*%diag(1/v.constr)%*%(X)%*%(beta.mle-beta.constr)
+        qvect[npar] <- -0.5*sum(1/v.mle-1/v.constr)
+        
+        qvect
+    }
+    class(ans) <- c("lik.metaLik")
+    ans
 }
 
-metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2){
-
+metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2, level.tau2=0.05){
+  
   call <- match.call()
   if (missing(data)) 
     data <- environment(formula)
@@ -98,6 +82,7 @@ metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, wei
   mf <- eval(mf, parent.frame())
   mt <- attr(mf, "terms")
   y <- model.response(mf, "any")
+  N <- length(y)
   sigma2 <- model.extract(mf, sigma2)
   if(is.null(sigma2)){
     w <- model.extract(mf, weights)
@@ -111,72 +96,62 @@ metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, wei
   offset <- as.vector(model.offset(mf))
   if (!is.null(offset)) {
     if (length(offset) != length(y)) 
-      stop(gettextf("number of offsets is %d should equal %d (number of observations)", 
-                    length(offset), length(y)), domain = NA)
+      stop(gettextf("number of offsets is %d should equal %d (number of observations)", length(offset), length(y)), domain = NA)
   }
   if (is.null(offset)) 
     offset <- rep.int(0, length(y))
   y <- y-offset
   
-  lik <- .likTerms(y, X, sigma2)$lik
-  glik <- .likTerms(y, X, sigma2)$glik
-  Jmatrix <- .likTerms(y, X, sigma2)$Jmatrix
-        
   ## compute DL estimates
-  D <- diag(sigma2, ncol=NROW(X), nrow=NROW(X))
-  P <- diag(NROW(X)) - X%*%solve(t(X)%*%solve(D)%*%X)%*%t(X)%*%solve(D)
-  q.stat <- t(y)%*%t(P)%*%solve(D)%*%P%*%y
-  t.value <- (q.stat-NROW(X)+NCOL(X))/(sum(diag(solve(D)))-sum(diag( solve(t(X)%*%solve(D)%*%X)%*%t(X)%*%solve(D)^2%*%X )))
+  D <- diag( 1/sigma2, ncol=NROW(X), nrow=NROW(X) )
+  P <- diag( NROW(X)) - X %*%  solve(t(X) %*% D %*% X) %*%t (X) %*% D
+  q.stat <- t(y) %*% t(P) %*% D %*% P %*%y
+  t.value <- ( q.stat-NROW(X)+NCOL(X) ) / ( sum( diag(D) ) - sum( diag( solve( t(X) %*% D %*%X ) %*% t(X) %*% D^2 %*%X ) ) )
   tau2.dl <- max(0, t.value)
-  weights.dl <- diag(tau2.dl, ncol=NROW(X), nrow=NROW(X)) + D
-  beta.dl <- solve(t(X)%*%solve(weights.dl)%*%X)%*%t(X)%*%solve(weights.dl)%*%y
-  var.dl <- solve(t(X)%*%solve(weights.dl)%*%X)
-  
-  ## compute MLE
-  start.theta <- c(beta.dl, var(y))
-  ntheta <- length(start.theta)
-  op <- optim(start.theta, fn=lik, gr=glik, method="BFGS", control=list(fnscale=-1, maxit=500))
-  if(op$convergence)
-    stop("optim: convergence not reached.\n")
-  theta.mle <- op$par
-  ntheta <- length(theta.mle)
-  
-  ## parametric bootstrap test of homogeneity
-  fit.fe <- lm(y~0+X, weights=1/sigma2)
-  nboot <- 1000
-  boot.sim <- replicate( nboot, rnorm(length(y), fitted(fit.fe), sqrt(sigma2)) )
-  score.stat <- function(this.y, observed=FALSE){
-    this.fit <- lm.wfit(x=X, y=this.y, w=1/sigma2)
-    this.theta <- c(coef(this.fit), 0.0)
-    g <- .likTerms(this.y, X, sigma2)$glik(this.theta)
-    if(!observed){
-      I <- .likTerms(this.y, X, sigma2)$Imatrix(this.theta)
-      return( g[ntheta]^2/I[ntheta,ntheta] )
-    }
-    else{
-      J <- .likTerms(this.y, X, sigma2)$Jmatrix(this.theta)
-      return( g[ntheta]^2/(J[ntheta,ntheta]-J[ntheta,-ntheta]%*%solve(J[-ntheta,-ntheta])%*%J[-ntheta,ntheta]) )
-    }
+  weights.dl <- diag(1/(tau2.dl+sigma2), ncol=NROW(X), nrow=NROW(X))
+  beta.dl <- solve( t(X) %*% weights.dl %*%X ) %*% t(X) %*% weights.dl %*%y
+  var.dl <- solve( t(X) %*% weights.dl %*%X )
+
+  ## MLE random effects model
+  prof.tau2 <- .likTerms(y, X, sigma2)$prof.tau2
+  tau2.mle <- optimize( prof.tau2, interval=c(0, 1e+4), maximum=TRUE)$maximum
+  v <- sigma2+tau2.mle
+  beta.mle <- coef( lm.wfit(x = X, y = y, w = 1/v) )
+
+  ## MLE fixed effects model
+  fit.fe <- lm(y ~ 0 + X, weights=1/sigma2)
+  beta.fe <- coef(fit.fe)
+  names(beta.fe) <- names(beta.mle)
+
+  ## Cochran Q statistic for heterogeneity
+  w.fe <- diag(1/sigma2)
+  .invcalc <- function (X, W, k){
+      sWX <- sqrt(W) %*% X
+      res.qrs <- qr.solve(sWX, diag(k))
+      return(tcrossprod(res.qrs))
   }
-  obs.score <- score.stat(y)
-  boot.scores <- apply(boot.sim, 2, score.stat)
-  pval.tau2 <- mean( boot.scores>obs.score )
+  stXWX <- .invcalc(X = X, W = w.fe, k = N)
+  P <- w.fe - w.fe %*% X %*% stXWX %*% crossprod(X, w.fe)
+  Q <- max(0, c(crossprod(y, P) %*% y))
+  pval.tau2 <- ifelse(N - NCOL(X) >= 1, pchisq(Q, df = N - NCOL(X), lower.tail = FALSE), 1)
+
+  terms <- .likTerms(y, X, sigma2)
+  lik <- terms$lik
+  Jmatrix <- terms$Jmatrix
+  Imatrix <- terms$Imatrix
   
-  if(pval.tau2<0.05){
-    vcov.mle <- try( solve(Jmatrix(theta.mle)) )
-    if(inherits(vcov.mle, "try-error") || any(diag(vcov.mle)<0))
-      stop("convergence not reached, perhaps too few studies.\n")
+  vcov.mle <- try( solve(Jmatrix(beta.mle, tau2.mle)) )
+  if(inherits(vcov.mle, "try-error") || any(diag(vcov.mle)<0)){
+      vcov.mle <- try( solve(Imatrix(beta.mle, tau2.mle)) )
+      if(inherits(vcov.mle, "try-error") || any(diag(vcov.mle)<0))
+          stop("convergence not reached, perhaps too few studies.\n")
   }
-  else{
-    theta.mle <- c( coef(fit.fe), 0.0)
-    vcov.mle <- matrix(0.0, nrow=ntheta, ncol=ntheta)
-    vcov.mle[-ntheta,-ntheta] <- vcov(fit.fe)
-  }
-  names(theta.mle) <- colnames(vcov.mle) <- rownames(vcov.mle) <- c(colnames(X), "tau^2")
-  fitted.values <- X%*%theta.mle[-ntheta]
-    
+  fitted.values <- X%*%beta.mle
+  
+  colnames(vcov.mle) <- rownames(vcov.mle) <- c(colnames(X), "tau^2")
+  
   ## exit
-  m <- structure(list(y=y+offset, X=X, fitted.values=fitted.values, sigma2=sigma2, K=NROW(X), mle=theta.mle, vcov=vcov.mle, max.lik=lik(theta.mle), tau2.mle=op$par[ntheta], pval.tau2=pval.tau2, DL=beta.dl, tau2.DL=tau2.dl, vcov.DL=var.dl, call=call, formula=formula, terms=mt,  offset=offset, contrasts = attr(X, "contrasts"), xlevels = .getXlevels(mt, mf), model=mf), class="metaLik")
+  m <- structure(list(y=y+offset, X=X, fitted.values=fitted.values, sigma2=sigma2, K=NROW(X), mle=c(beta.mle, tau2.mle), vcov=vcov.mle, max.lik=lik(beta.mle, tau2.mle), beta.mle=beta.mle, tau2.mle=tau2.mle, pval.tau2=pval.tau2, level.tau2=level.tau2, Q=Q, DL=beta.dl, tau2.DL=tau2.dl, vcov.DL=var.dl, call=call, formula=formula, terms=mt,  offset=offset, contrasts = attr(X, "contrasts"), xlevels = .getXlevels(mt, mf), model=mf), class="metaLik")
   m
 }
 
@@ -196,10 +171,6 @@ print.metaLik <- function(x, digits = max(3, getOption("digits") - 3), ...)
   cat("\n")
   cat("Maximum likelihood estimate of tau^2:\n")
   print.default(format(x$tau2.mle, digits=digits),
-                print.gap = 2, quote = FALSE)
-  cat("\n")
-  cat("Score test for homogeneity p-value:\n")
-  print.default(format(x$pval.tau2, digits=digits),
                 print.gap = 2, quote = FALSE)
   cat("\n")
   cat("Maximized log-likelihood:\n")
@@ -244,8 +215,9 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
   digits <- max(3, getOption("digits") - 3)
   if(class(object)!="metaLik")
     stop("\nfunction designed for 'metaLik' objects")
+  beta.mle <- coef(object)
   if(is.character(param)){
-    pnames <- names(coef(object))
+    pnames <- names(beta.mle)
     param <- match(param, pnames, nomatch=NA)
   }
   if(missing(param) || is.na(param)){
@@ -261,20 +233,10 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
     stop("\n'object' must be a metaLik object")
    
   pl <- .profLik(object, param=param)
-  values <- pl$values
-  rs <- pl$rs
-  us <- pl$us
-  rtheta <- predict(smooth.spline(values, rs), x=value)$y
-  theta.mle <- object$mle
-  random.effects <- (object$pval.tau2<0.05)
-  if(random.effects){
-    par.mle <- theta.mle[param]
-    se.mle <- sqrt(object$vcov[param, param]) 
-    rskovs <- rs+1/rs*log(us/rs)
-    rtheta.skov <- predict(smooth.spline(values, rskovs), x=value)$y
-  }
-  else
-    rtheta.skov <- rtheta
+
+  rtheta <- rtheta.skov <- predict(pl$smooth.rs, x=value)$y
+  if(object$tau2.mle>0)
+      rtheta.skov <- predict(pl$smooth.rskovs, x=value)$y
   
   if(alternative=="less"){
     pval.rtheta <- pnorm(rtheta)
@@ -289,16 +251,11 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
     pval.rskov <- 2*pnorm(-abs(rtheta.skov))
   }
   if(print){
-    cat("\nSigned profile log-likelihood ratio test for parameter ", names(theta.mle[param]), sep="", "\n")
-    if(random.effects){
-      cat("\nFirst-order statistic")
-      cat("\nr:", formatC(rtheta, digits), ", p-value:", formatC(pval.rtheta, digits), sep="")
-      cat("\nSkovgaard's statistic")
-      cat("\nrSkov:", formatC(rtheta.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
-    }
-    else{
-      cat("\nr:", formatC(rtheta, digits), ", p-value:", formatC(pval.rtheta, digits), sep="")
-    }
+    cat("\nSigned profile log-likelihood ratio test for parameter ", names(beta.mle[param]), sep="", "\n")
+    cat("\nFirst-order statistic")
+    cat("\nr:", formatC(rtheta, digits), ", p-value:", formatC(pval.rtheta, digits), sep="")
+    cat("\nSkovgaard's statistic")
+    cat("\nrSkov:", formatC(rtheta.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
     if(alternative=="two.sided")
       cat("\nalternative hypothesis: parameter is different from ", round(value, digits), sep="", "\n")
     else
@@ -310,13 +267,15 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
 }
 
 coef.metaLik <- function(object, ...)
-    object$mle[-length(object$mle)]
+    object$beta.mle 
 
-vcov.metaLik <- function(object, ...)
-    object$vcov[-length(object$mle),-length(object$mle),drop=FALSE]
-
+vcov.metaLik <- function(object, ...){
+    nbeta <- length(object$beta.mle)
+    object$vcov[1:nbeta,1:nbeta]
+}
+                
 logLik.metaLik <- function(object, ...) {
-  structure(object$max.lik, df = sum(sapply(object$mle, length)), class = "logLik")
+  structure(object$max.lik, df = sum(sapply(object$mle, length))+(object$tau2.mle>0), class = "logLik")
 }
 
 model.matrix.metaLik <- function(object, ...) {
@@ -328,11 +287,9 @@ model.matrix.metaLik <- function(object, ...) {
 
 residuals.metaLik <- function(object, type = c("pearson", "response", "working"), ...){
 
-  mle <- object$mle
-  npar <- length(object$mle)
   res <- object$y-object$fitted.values
   type <- match.arg(type)
-  se <- sqrt(object$sigma2+mle[npar])
+  se <- sqrt(object$sigma2+object$tau2.mle)
   switch(type, working=, response=res, pearson=res/se)
 }
  
@@ -346,24 +303,30 @@ summary.metaLik <- function(object, ...){
   beta.se <- sqrt(diag(as.matrix(vcov(object))))
   r <- matrix(nrow=nbeta, ncol=4)
   for(i in 1:nbeta)
-    r[i,] <- test.metaLik(object, param=i, print=FALSE) 
+    r[i,] <- test.metaLik(object, param=i, print=FALSE)
+  tau2 <- object$tau2.mle
   
   cat("\nLikelihood inference in random-effects meta-analysis models\n")
   cat("\nCall:\n", paste(deparse(object$call), sep = "\n", collapse = "\n"), "\n", sep = "")
-  cat("Estimated heterogeneity parameter tau^2: ", formatC(object$tau2.mle, digits), " (p-value ", formatC(object$pval.tau2, digits), ")", sep="")
-    if(object$pval.tau2<0.05){
-      cat("\n\nFixed-effects:\n")
-      ans <- cbind(beta, beta.se, r)
-      dimnames(ans) <- list(names(beta), c("estimate", "std.err.", "signed logLRT", "p-value", "Skovgaard", "p-value"))
-      ans <- round(ans, digits=digits)
-    }
-    else{
-      cat("\n\nNo evidence of random-effects at 5% level, move to fixed-effects model")
-      cat("\nFixed-effects:\n")
-      ans <- cbind(beta, beta.se, r[,1], r[,2])
-      dimnames(ans) <- list(names(beta), c("estimate", "std.err.", "signed logLRT", "p-value"))
-      ans <- round(ans, digits=digits)
-    }
+  cat("\nEstimated heterogeneity parameter tau2")
+  if(object$tau2.mle > 1e-4)
+      cat(" = ", formatC(unname(object$tau2.mle), digits), sep="")
+   else
+       cat(" < 0.0001")
+   cat("\nTest for heterogeneity Q = ", formatC(unname(object$Q), digits), " (pval", sep="")
+  if(object$pval.tau2 > 1e-4)
+      cat(" = ", formatC(unname(object$pval.tau2), digits), ")", sep="")
+  else
+      cat(" < 0.0001)")
+  if(object$pval.tau2 > object$level.tau2)
+      cat("\nNo evidence of between-study heterogeneity, Skovgaard's statistic reduces to signed logLRT")
+  
+  cat("\n\nFixed-effects:\n")
+
+  ans <- cbind(beta, beta.se, r)
+  dimnames(ans) <- list(names(beta), c("estimate", "std.err.", "signed logLRT", "p-value", "Skovgaard", "p-value"))
+  ans <- round(ans, digits=digits)
+  
   print.default(ans, print.gap = 2)
   cat("\nLog-likelihood:", format(round(object$max.lik, digits)), "\n")
   invisible(object)
@@ -386,151 +349,154 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
   par.name <- names(coef(fitted))[param]
 
   pl <- .profLik(fitted, param=param)
-  values <- pl$values
-  rs <- pl$rs
-  us <- pl$us
-  random.effects <- (fitted$pval.tau2<0.05)
-  if(random.effects){
-    par.mle <- fitted$mle[param]
-    se.mle <- sqrt(fitted$vcov[param, param]) 
-    rskovs <- rs+1/rs*log(us/rs)
-    rskovs <- predict(smooth.spline(values, rskovs), x=values)$y
+
+  up.r <-  up.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1-level)/2))$y
+  lo.r <- lo.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1+level)/2))$y
+
+  if(fitted$tau2.mle>0){
+      up.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1-level)/2))$y
+      lo.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1+level)/2))$y
   }
-  else
-    rskovs <- rs
-  smooth.r <- smooth.spline(rs, values)
-  smooth.rskov <- smooth.spline(rskovs, values)
-  up.r <- predict(smooth.r, x=qnorm((1-level)/2))$y
-  lo.r <- predict(smooth.r, x=qnorm((1+level)/2))$y
-  up.rskov <- predict(smooth.rskov, x=qnorm((1-level)/2))$y
-  lo.rskov <- predict(smooth.rskov, x=qnorm((1+level)/2))$y  
-  
+ 
   if(display){
-    if(random.effects)
-      plot(smooth.spline(values, rs), type="l", ylim=c(-5,5), ylab="pivot", xlab=par.name, bty="l", col="blue")
-    else{
-       up.graph <- predict(smooth.rskov, x=-5)$y
-       lo.graph <- predict(smooth.rskov, x=5)$y
-      plot(smooth.spline(values, rs), type="l", ylim=c(-5,5), xlim=c(lo.graph, up.graph), ylab="pivot", xlab=par.name, bty="l", col="blue")
-    }
-    segments(lo.r, -5.5, lo.r, qnorm((1+level)/2), lty=2, col="blue")
-    segments(up.r, -5.5, up.r, qnorm((1-level)/2), lty=2, col="blue")
-    if(random.effects){
-      lines(smooth.spline(values, rskovs), col="red")
-      legend(mean(values), 4, c("First-order", "Skovgaard"), cex=0.8, col=c("blue", "red"), lty=c(1,1), bty="n")
-      segments(lo.rskov, -5.5, lo.rskov, qnorm((1+level)/2), lty=2, col="red")
-      segments(up.rskov, -5.5, up.rskov, qnorm((1-level)/2), lty=2, col="red")
-    }   
-    abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')
-    abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')
+      pts <- seq(-5, 5, by=.5)
+      values <- fitted$beta.mle[param] + pts * sqrt(fitted$vcov[param,param])
+      toplot <- predict( pl$smooth.rs, x=values )
+      plot(toplot, type="l", ylim=c(-5,5), ylab="pivot", xlab=par.name, col="blue")
+      segments(lo.r, -5.5, lo.r, qnorm((1+level)/2), lty=2, col="blue")
+      segments(up.r, -5.5, up.r, qnorm((1-level)/2), lty=2, col="blue")
+      if(fitted$tau2.mle > 0 && fitted$pval.tau2 < fitted$level.tau2){
+          toplot <-  predict( pl$smooth.rskovs, x=values )
+          lines(toplot, col="red")
+          segments(lo.rskov, -5.5, lo.rskov, qnorm((1+level)/2), lty=2, col="red")
+          segments(up.rskov, -5.5, up.rskov, qnorm((1-level)/2), lty=2, col="red")
+          legend(mean(values), 4, c("First-order", "Skovgaard"), cex=0.8, col=c("blue", "red"), lty=c(1,1), bty="n")
+      }
+      abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')
+      abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')
   }
   tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)
   rownames(tab) <- c("signed logLRT", "Skovgaard")
   colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, " %", sep=""))
   cat("\nConfidence interval for parameter", par.name, "\n\n")
-  if(fitted$pval.tau2<0.05)
-    print(tab)
-    else
-      print(tab[1,])
-  res <- structure(list(rthetas=rs, rskovs=rskovs, lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))
+  print(tab)
+
+  res <- structure(list(lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))
   invisible(res)
 }
 
 .profLik <- function(object, param=1){
 
-  if(class(object)!="metaLik")
-    stop("\ninternal function designed for 'metaLik' objects")
-  random.effects <- (object$pval.tau2<0.05)
-  y <- object$y
-  X <- object$X
-  offset <- object$offset
-  y <- y-offset 
-  sigma2 <- object$sigma2
-  ntheta <- length(object$mle)
-  
-  terms <- .likTerms(y, X, sigma2)
-  lik <- terms$lik
-  glik <- terms$glik
-  Jmatrix <- terms$Jmatrix
-  Imatrix <- terms$Imatrix
-  Smatrix <- terms$Smatrix
-  qvect <- terms$qvect
-
-  .computeU <- function(th.mle, th.constr, id.par){
-    A <- ( solve( Smatrix(th.mle, th.constr) )%*%qvect(th.mle, th.constr) )[id.par]
-    B <- det( Jmatrix(th.mle) )^(.5)
-    C <- det( solve(Imatrix(th.mle)) )
-    D <- det( Smatrix(th.mle, th.constr) )
-    E <- det( as.matrix(Jmatrix(th.constr)[-id.par,-id.par] ) )^(-.5)
-    
-    return( sign(th.mle[id.par]-th.constr[id.par])*abs(A*B*C*D*E) )
-  }
+    if(class(object)!="metaLik")
+        stop("\ninternal function designed for 'metaLik' objects")
+    y <- object$y
+    N <- length(y)
+    X <- object$X
+    offset <- object$offset
+    y <- y-offset 
+    sigma2 <- object$sigma2
+    nbeta <- length(object$beta.mle)
+    terms <- .likTerms(y, X, sigma2)
+    lik <- terms$lik
+    Jmatrix <- terms$Jmatrix
+    Imatrix <- terms$Imatrix
+    Smatrix <- terms$Smatrix
+    qvect <- terms$qvect
      
-  theta.mle <- object$mle
-  par.mle <- theta.mle[param]
-  se.mle <- sqrt(object$vcov[param, param]) 
-  pts <- seq(-10, 10, by=.5)
-  pts <- pts[pts!=0] # remove discontinuity point
-  values <- par.mle+pts*se.mle
-  rs <- us <- rep(NA, length(values))
+    beta.mle <- object$beta.mle
+    tau2.mle <- object$tau2.mle
+    par.mle <- beta.mle[param]
+    se.mle <- sqrt(object$vcov[param, param]) 
+    pts <- c(seq(-5, -1, by=.5), seq(1, 5, by=.5))
+    values <- par.mle+pts*se.mle
+    rs <- us <- rep(NA, length(values))
   
-  fixed <- rep(NA, ntheta)
-  theta.constr <- fixed
-  names(theta.constr) <- names(theta.mle)
-  for(i in 1:length(values)){
-    fixed[param] <- theta.constr[param] <- values[i]
-    ynew <- y-as.matrix(X[,param])%*%values[i]
-    Xnew <- as.matrix(X[,-param])
-    if(random.effects){  
-      if(NCOL(Xnew)>0){
-        beta.start <- coef(lm.wfit(x=Xnew, y=ynew, w=1/sigma2))
-        op <- optim(c(beta.start, var(y)), fn=lik, gr=glik, fixed=fixed, method="BFGS",
-                      control=list(fnscale=-1, maxit=500)) 
-        if(op$convergence) 
-          op$par <- rep(NA, ntheta-1)
-        theta.constr[is.na(fixed)] <- op$par
-      }
-      else{
-        op <- optimise(f=lik, interval=c(0, 1e+6), maximum=TRUE, fixed=fixed)
-        theta.constr[is.na(fixed)] <- op$maximum
-      }
-      ## likelihood ratio test statistic (and Skovgaard correction)
-      if(all(is.finite(theta.constr)))
-        lrt <- 2*(lik(theta.mle)-lik(theta.constr))
-      else
-        lrt <- NA
-      if(is.finite(lrt) && lrt>0){
-        rs[i] <- sign(theta.mle[param]-theta.constr[param])*sqrt(lrt)
-        us[i] <- try(.computeU(theta.mle, theta.constr, param), silent=TRUE)
-        if(inherits(us[i], "try-error"))
-          us[i] <- NA
-      }
-      else
-          rs[i] <- us[i] <- NA
+    fixed <- rep(NA, nbeta)
+    beta.constr <- fixed
+    names(beta.constr) <- names(beta.mle)
+
+    .computeU <- function(beta.mle, tau2.mle, beta.constr, tau2.constr, id.par){
+        S <- Smatrix(beta.mle, tau2.mle, beta.constr, tau2.constr)
+        q <- qvect(beta.mle, tau2.mle, beta.constr, tau2.constr)
+        J.mle <- Jmatrix(beta.mle, tau2.mle)
+        J.constr <- Jmatrix(beta.constr, tau2.constr)
+        I.mle <- Imatrix(beta.mle, tau2.mle)
+        
+        A <- abs( solve(S) %*%q )[id.par]
+        B <- abs( det( J.mle ) )^(.5)
+        C <- abs( det( solve(I.mle) ) )
+        D <- abs( det( S ) )
+        E <- abs( det( as.matrix(J.constr[-id.par,-id.par] ) ) )^(-.5)
+        
+        return( sign(beta.mle[id.par]-beta.constr[id.par])*A*B*C*D*E )
     }
-    else{ ## only fixed effects
-      ## constrained maximum likelihood estimation
-      if(NCOL(Xnew)>0){
-        beta.constr <- coef(lm.wfit(x=Xnew, y=ynew, w=1/sigma2))
-        theta.constr[is.na(fixed)] <- c(beta.constr, 0.0)
-      }
-      else
-        theta.constr[is.na(fixed)] <- 0.0
-      ## likelihood ratio test statistic
-      if(all(is.finite(theta.constr)))
-        lrt <- 2*(lik(theta.mle)-lik(theta.constr))
-      else
-        lrt <- NA
-      if(is.finite(lrt) && lrt>0)
-        rs[i] <- us[i] <- sign(theta.mle[param]-theta.constr[param])*sqrt(lrt)
-      else
-        rs[i] <- us[i] <- NA
+   
+    for(i in 1:length(values)){
+        fixed[param] <- beta.constr[param] <- values[i]
+        ynew <- y-as.matrix(X[,param])%*%values[i]
+        Xnew <- as.matrix(X[,-param])
+        tau2.constr <- 0.0
+        if(object$tau2.mle>0){
+            prof.tau2 <- .likTerms(ynew, Xnew, sigma2)$prof.tau2
+            tau2.constr <- optimize(prof.tau2, interval=c(0, 1e+4), maximum=TRUE)$maximum
+        }
+        if(NCOL(Xnew)>0){
+            v <- sigma2+tau2.constr
+            beta.hat <- coef( lm.wfit(x = Xnew, y = ynew, w = 1/v) )
+            beta.constr[is.na(fixed)] <- beta.hat
+        }
+
+        ## likelihood ratio test statistic (and Skovgaard correction)
+        lrt <- 2*(lik(beta.mle, tau2.mle)-lik(beta.constr, tau2.constr))
+
+        if(is.finite(lrt) && lrt>0){
+            rs[i] <- sign(beta.mle[param]-beta.constr[param])*sqrt(lrt)
+            if(tau2.mle>0 && object$pval.tau2 < object$level.tau2){
+                us[i] <- try(.computeU(beta.mle, tau2.mle, beta.constr, tau2.constr, param), silent=TRUE)
+                if(inherits(us[i], "try-error"))
+                    us[i] <- NA
+            }
+        }
     }
-  }
-  ok <- which(is.finite(rs) & is.finite(us))
-  values <- values[ok]
-  rs <- rs[ok]
-  us <- us[ok]
-  
-  return( list(rs=rs, us=us, values=values) )
+    smooth.rs <- smooth.rskovs <-  smooth.spline( x=values, y=rs )
+    smooth.rs.inv <- smooth.rskovs.inv <- smooth.spline( y=values, x=rs )
+    if(tau2.mle>0 && object$pval.tau2 < object$level.tau2){
+        rskovs <- rs+1/rs*log(us/rs)
+        smooth.rskovs <- smooth.spline( x=values, y=rskovs )
+        smooth.rskovs.inv <- smooth.spline( y=values, x=rskovs )
+    }
+
+    return( list( smooth.rs=smooth.rs, smooth.rs.inv=smooth.rs.inv, smooth.rskovs=smooth.rskovs, smooth.rskovs.inv=smooth.rskovs.inv) )
+}
+
+simulate.metaLik <- function(object, nsim = 1, seed = NULL, DL = FALSE, ...){
+
+    if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) 
+        runif(1)
+    if (is.null(seed)) 
+        RNGstate <- get(".Random.seed", envir = .GlobalEnv)
+    else {
+        R.seed <- get(".Random.seed", envir = .GlobalEnv)
+        set.seed(seed)
+        RNGstate <- structure(seed, kind = as.list(RNGkind()))
+        on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
+    }
+    if(!DL){
+        ftd <- fitted(object)
+        tau2 <- object$tau2.mle
+    }
+    else{ ## DL
+        ftd <- object$X %*% object$DL
+        tau2 <- object$tau2.DL
+    }
+    n <- length(ftd)
+    nm <- names(ftd)
+
+    val <- replicate(nsim, ftd + rnorm( n, sd = sqrt(object$sigma2+tau2) ) )
+    val <- as.data.frame(val)
+    colnames(val) <- paste("sim", seq_len(nsim), sep = "_")
+    if (!is.null(nm)) 
+        rownames(val) <- nm
+    attr(val, "seed") <- RNGstate
+    val
 }

@@ -4,11 +4,11 @@
 Hypothesis testing on a scalar fixed-effect component in meta-analysis and meta-regression models
 }
 \description{
-Performs hypothesis testing on a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's (1996) adjustment, as described in Guolo (2012). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package.
+Performs hypothesis testing on a scalar component of the fixed-effects vector in meta-analysis and meta-regression models, using the signed profile log-likelihood ratio test and its higher-order Skovgaard's adjustment (Skovgaard, 1996), as described in Guolo (2012). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package.
 }
 \usage{
-test.metaLik(object, param=1, value=0, alternative=c("two.sided", 
-"less", "greater"), print=TRUE)
+test.metaLik(object, param=1, value=0, alternative=c("two.sided", "less", "greater"), 
+print=TRUE)
 }
 \arguments{
 \item{object}{an object of class \code{"\link{metaLik}"}.}
@@ -23,13 +23,13 @@ Let \eqn{\theta} be the whole parameter vector. The signed profile log-likelihoo
     \deqn{
 r(\beta) = sign(\hat{\beta}-\beta)\sqrt{2 \{l(\hat{\theta})-l(\theta)\} },}
 where \eqn{l} is the log-likelihood function and \eqn{\hat{\theta}} is the maximum likelihood estimate of \eqn{\theta}.
-The Skovgaard's (1996) adjustment is defined as
+The Skovgaard's adjustment is defined as
   \deqn{
 \overline r(\beta) = r(\beta) + \frac{1}{r(\beta)}\log\frac{u(\beta)}{r(\beta)},
 }
 where \eqn{u(\beta)} is a correction term involving the observed and the expected information matrix and covariances of likelihood quantities, as described in Guolo (2012). Skovgaard's statistic has a second-order accuracy in approximating the standard normal distribution. In the rare case of equal within-study variances, Skovgaard's statistic reaches third-order accuracy.
 
-The package checks whether the maximum likelihood estimate of \eqn{\tau^2} is not significant (see \code{\link{metaLik}} for details): in this case, the random-effect is dropped and Skovgaard's correction vanishes.
+The package checks whether there is significant between-study heterogeneity (see \code{\link{metaLik}} for details): in this case, Skovgaard's correction is dropped.
 }
 \value{
 A list with the following components:
@@ -39,11 +39,11 @@ A list with the following components:
 }
 
 \references{
-Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine}, \bold{31}, 313--327.
+Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine} \bold{31}, 313--327.
 
-Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software}, \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
+Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software} \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.
 
-Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli}, \bold{2}, 145--165.
+Skovgaard, I. M. (1996). An Explicit Large-Deviation Approximation to One-Parameter Tests. \emph{Bernoulli} \bold{2}, 145--165.
 }
 \author{
 Annamaria Guolo and Cristiano Varin.

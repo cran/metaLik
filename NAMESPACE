@@ -1,4 +1,4 @@
-export(metaLik, test.metaLik)
+export(metaLik, test.metaLik, simulate.metaLik)
 S3method(profile, metaLik)
 S3method(print, metaLik)
 S3method(summary, metaLik)
@@ -7,3 +7,4 @@ S3method(vcov, metaLik)
 S3method(logLik, metaLik)
 S3method(model.matrix, metaLik)
 S3method(residuals, metaLik)
+
