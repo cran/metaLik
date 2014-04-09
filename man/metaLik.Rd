@@ -18,7 +18,7 @@ level.tau2=0.05)
   \item{data}{an optional data frame, list or environment (or object
     coercible by \code{\link{as.data.frame}} to a data frame) containing
     the variables in the model.  If not found in \code{data}, the
-    variables are taken from \code{environment(formula)}, typically the environment from which \code{lm} is called.}
+    variables are taken from \code{environment(formula)}, typically the environment from which \code{metaLik} is called.}
 \item{subset}{an optional vector specifying a subset of observations to be used in the fitting process.}
 \item{contrasts}{an optional list. See the contrasts.arg of \code{\link{model.matrix.default}}.}
 \item{offset}{this can be used to specify an a priori known component to be included in the linear predictor during fitting. This should be \code{NULL} or a numeric vector of length equal to the number of cases. One or more \code{\link{offset}} terms can be included in the formula instead or as well, and if more than one are specified their sum is used. See \code{\link{model.offset}}.}
@@ -31,9 +31,9 @@ Models for \code{metaLik.fit} are specified simbolically. A typical model has th
 
 Within-study variances are specified through \code{sigma2}: the rare case of equal within-study variances implies Skovgaard's adjustment reaching a third-order accuracy. 
 
-If the Cochran's Q test for between-study heterogeneity is not significant at the \code{level.tau2} than Skovgaard's correction is dropped, and only the signed log-likelihood ratio statistic is computed. We recomment the user to set values of \code{level.tau2} not higher than \code{0.05} because Skovgaard's statistic may become unstable when there is no evidence of between-study heterogeneity. \bold{Warning} Since version \code{0.40.0} the Cochran's Q test substitutes the bootstrap score test.
+Higher-order information is supplied only if the Cochran's Q test concludes for a significant between-study heterogeneity. We recommend the user to set values of \code{level.tau2} for the Q test not higher than \code{0.05} because Skovgaard's statistic may become unstable when there is no clear evidence of between-study heterogeneity. Moreover, Skovgaard's statistic is checked for monotonicity and if the check is not passed then only the standard profile likelihood test is computed. \bold{Warning} Since version \code{0.40.0} the Cochran's Q test substitutes the bootstrap score test.
 
-The fixed-effects estimate through DerSimonian and Laird approach (DerSimonian and Laird, 1986) is also supplied. In this case, the method of moments estimator of the heterogeneity parameter \eqn{\tau^2} is considered. 
+DerSimonian and Laird estimates (DerSimonian and Laird, 1986) are also supplied. 
 }
 \value{
 An object of class \code{"metaLik"} with the following components:

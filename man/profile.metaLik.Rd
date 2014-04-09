@@ -17,13 +17,19 @@ Computes confidence intervals for a scalar component of the fixed-effects vector
 \item{...}{additional arguments}
 }
 \details{
-\code{profile.metaLik} computes confidence intervals for a scalar component of interest in the fixed-effects vector. See \code{\link{test.metaLik}} for more details about the first- and higher-order statistics.
+\code{profile.metaLik} computes confidence intervals for a scalar component of interest in the fixed-effects vector. See \code{\link{test.metaLik}} for more details about the first- and higher-order statistics.  In case of \code{display=TRUE}, the signed square root of the profile likelihood is plotted together with the horizontal dashed lines relative to the specified \code{level} and the corresponding confidence intervals. Higher-order information is supplied only if the Cochran's Q (Cochran, 1937) test indicates for a significant between-study heterogeneity and the monotonicity check is passed, see \code{\link{metaLik}} for details.
 }
 \value{
-\code{profile.metaLik} returns a matrix with columns the endpoints of the confidence intervals at level \code{level} for the specified parameter according to the signed profile log-likelihood ratio statistic and the Skovgaard's statistic (Skovgaard, 1986). In case of \code{display=TRUE}, the signed square root of the profile likelihood is plotted together with the horizontal dashed lines relative to the specified \code{level} and the corresponding confidence intervals. The package checks whether there is significant between-study heterogeneity (see \code{\link{metaLik}} for details). In this case, Skovgaard's correction is dropped.
+\code{profile.metaLik} returns a list with the following components:
+\item{lower.r}{lower endpoint of the confidence interval at level \code{level} for the specified parameter according to the signed profile log-likelihood ratio statistic.}
+\item{upper.r}{upper endpoint of the confidence interval at level \code{level} for the specified parameter according to the signed profile log-likelihood ratio statistic.}
+\item{lower.rskov}{lower endpoint of the confidence interval at level \code{level} for the specified parameter according to Skovgaard's statistic.}
+\item{upper.rskov}{upper endpoint of the confidence interval at level \code{level} for the specified parameter according to Skovgaard's statistic.}
 }
 
 \references{
+Cochran, W. G. (1937). Problems Arising in the Analysis of a Series of Similar Experiments. \emph{Journal of the Royal Statistical Society Supplement} \bold{4}, 102--118.
+
 Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine} \bold{31}, 313--327.
 
 Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software} \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.

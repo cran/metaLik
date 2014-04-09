@@ -18,8 +18,7 @@ print=TRUE)
 \item{print}{logical, whether output information should be printed or not; default is \code{TRUE}.}
 }
 \details{
-\code{test.metaLik} allows hypothesis testing on a scalar component of interest in the fixed-effects vector. The asymptotic distribution of the evaluated statistics is the standard normal. 
-Let \eqn{\theta} be the whole parameter vector. The signed profile log-likelihood ratio statistic for inference on scalar component \eqn{\beta} of \eqn{\theta} is
+\code{test.metaLik} allows hypothesis testing on a scalar component of interest in the fixed-effects vector. The signed profile log-likelihood ratio statistic for inference on scalar component \eqn{\beta} of \eqn{\theta} is
     \deqn{
 r(\beta) = sign(\hat{\beta}-\beta)\sqrt{2 \{l(\hat{\theta})-l(\theta)\} },}
 where \eqn{l} is the log-likelihood function and \eqn{\hat{\theta}} is the maximum likelihood estimate of \eqn{\theta}.
@@ -29,16 +28,20 @@ The Skovgaard's adjustment is defined as
 }
 where \eqn{u(\beta)} is a correction term involving the observed and the expected information matrix and covariances of likelihood quantities, as described in Guolo (2012). Skovgaard's statistic has a second-order accuracy in approximating the standard normal distribution. In the rare case of equal within-study variances, Skovgaard's statistic reaches third-order accuracy.
 
-The package checks whether there is significant between-study heterogeneity (see \code{\link{metaLik}} for details): in this case, Skovgaard's correction is dropped.
+Higher-order information is supplied only if the Cochran's Q (Cochran, 1937) test indicates for a significant between-study heterogeneity and the monotonicity check is passed, see \code{\link{metaLik}} for details.
 }
 \value{
 A list with the following components:
-\item{First-order statistic}{the value of the signed profile log-likelihood ratio statistic and the associated p-value of the test.}
-\item{Skovgaard's statistic}{the value of the Skovgaard's statistic and the associated p-value of the test.}
-\item{alternative}{a character string describing the alternative hypothesis.}
+\item{r}{the value of the signed profile log-likelihood ratio statistic.}
+\item{pvalue.r}{the p-value of the signed profile log-likelihood ratio test.}
+\item{rskov}{the value of the Skovgaard's statistic.}
+\item{pvalue.rskov}{the p-value of the Skovgaard's test.}
+\item{check.skov}{logical, whether Q test or monotonicity check are passed. Otherwise (if any or both  the two are not passed),  Skovgaard's statistic is dropped.}
 }
 
 \references{
+Cochran, W. G. (1937). Problems Arising in the Analysis of a Series of Similar Experiments. \emph{Journal of the Royal Statistical Society Supplement} \bold{4}, 102--118.
+
 Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine} \bold{31}, 313--327.
 
 Guolo, A. and Varin, C. (2012). The R Package metaLik for Likelihood Inference in Meta-Analysis. \emph{Journal of Statistical Software} \bold{50} (7), 1--14. \url{http://www.jstatsoft.org/v50/i07/}.

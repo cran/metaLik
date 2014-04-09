@@ -233,36 +233,49 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
     stop("\n'object' must be a metaLik object")
    
   pl <- .profLik(object, param=param)
-
-  rtheta <- rtheta.skov <- predict(pl$smooth.rs, x=value)$y
-  if(object$tau2.mle>0)
-      rtheta.skov <- predict(pl$smooth.rskovs, x=value)$y
+  ## check for monotonicity of Skovgaard modified profile likelihood
+  beta.se <- sqrt(diag(as.matrix(vcov(object))))
+  values <- seq(beta.mle[param]-2*beta.se[param], beta.mle[param]+2*beta.se[param], length=100)
+  preds <- predict( pl$smooth.rskovs, x=values )$y
+  check.skov <- all( diff(preds)<0 ) 
+      
+  r <- r.skov <- predict(pl$smooth.rs, x=value)$y
+  if(object$tau2.mle>0 && object$pval.tau2 < object$level.tau2 && check.skov)
+      r.skov <- predict(pl$smooth.rskovs, x=value)$y
   
   if(alternative=="less"){
-    pval.rtheta <- pnorm(rtheta)
-    pval.rskov <- pnorm(rtheta.skov)
+    pval.r <- pnorm(r)
+    pval.rskov <- pnorm(r.skov)
   }
   else if(alternative=="greater"){
-    pval.rtheta <- pnorm(rtheta, lower.tail=FALSE)
-    pval.rskov <- pnorm(rtheta.skov, lower.tail=FALSE)
+    pval.r <- pnorm(r, lower.tail=FALSE)
+    pval.rskov <- pnorm(r.skov, lower.tail=FALSE)
   }
   else{
-    pval.rtheta <- 2*pnorm(-abs(rtheta))
-    pval.rskov <- 2*pnorm(-abs(rtheta.skov))
+    pval.r <- 2*pnorm(-abs(r))
+    pval.rskov <- 2*pnorm(-abs(r.skov))
   }
   if(print){
     cat("\nSigned profile log-likelihood ratio test for parameter ", names(beta.mle[param]), sep="", "\n")
     cat("\nFirst-order statistic")
-    cat("\nr:", formatC(rtheta, digits), ", p-value:", formatC(pval.rtheta, digits), sep="")
-    cat("\nSkovgaard's statistic")
-    cat("\nrSkov:", formatC(rtheta.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
+    cat("\nr:", formatC(r, digits), ", p-value:", formatC(pval.r, digits), sep="")
+    if(object$tau2.mle>0 && object$pval.tau2 < object$level.tau2 && check.skov){
+        cat("\nSkovgaard's statistic")
+        cat("\nrSkov:", formatC(r.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
+    }
+    else{
+        if( object$tau2.mle==0 || object$pval.tau2 >= object$level.tau2 )
+            cat("\nSkovgaard's statistic not computed because Q test indicates no evidence of between-study heterogeneity")
+        if( (object$tau2.mle>0 && object$pval.tau2 < object$level.tau2) && !check.skov )
+            cat("\nSkovgaard's statistic not computed because the monotonicity check is not passed")
+    }
     if(alternative=="two.sided")
       cat("\nalternative hypothesis: parameter is different from ", round(value, digits), sep="", "\n")
     else
       cat("\nalternative hypothesis: parameter is ", alternative, " than ", round(value, digits), sep="", "\n")
   }
   ## bye
-  ans <- c(rtheta=rtheta, pvalue.rtheta=pval.rtheta, rskov=rtheta.skov, pvalue.rskov=pval.rskov)
+  ans <- list(r=r, pvalue.r=pval.r, rskov=r.skov, pvalue.rskov=pval.rskov, check.skov=check.skov)
   invisible(ans)
 }
 
@@ -301,9 +314,10 @@ summary.metaLik <- function(object, ...){
   beta <- coef(object)
   nbeta <- length(beta)
   beta.se <- sqrt(diag(as.matrix(vcov(object))))
-  r <- matrix(nrow=nbeta, ncol=4)
+  r <- matrix(nrow=nbeta, ncol=5)
   for(i in 1:nbeta)
-    r[i,] <- test.metaLik(object, param=i, print=FALSE)
+    r[i,] <- as.numeric( test.metaLik(object, param=i, print=FALSE) )
+  colnames(r) <- c("r", "pvalue.r", "rskov", "pvalue.rskov", "check.skov")
   tau2 <- object$tau2.mle
   
   cat("\nLikelihood inference in random-effects meta-analysis models\n")
@@ -318,12 +332,15 @@ summary.metaLik <- function(object, ...){
       cat(" = ", formatC(unname(object$pval.tau2), digits), ")", sep="")
   else
       cat(" < 0.0001)")
-  if(object$pval.tau2 > object$level.tau2)
-      cat("\nNo evidence of between-study heterogeneity, Skovgaard's statistic reduces to signed logLRT")
+  check.skov <- all(r[,"check.skov"]==1)
+   if( object$tau2.mle==0 || object$pval.tau2 >= object$level.tau2 )
+       cat("\nSkovgaard's statistic not computed because Q test indicates no evidence of between-study heterogeneity")
+  if( (object$tau2.mle>0 && object$pval.tau2 < object$level.tau2) && !check.skov )
+      cat("\nSkovgaard's statistic not computed because the monotonicity check is not passed")
   
   cat("\n\nFixed-effects:\n")
 
-  ans <- cbind(beta, beta.se, r)
+  ans <- cbind( beta, beta.se, r[,"r"], r[,"pvalue.r"], r[,"rskov"], r[,"pvalue.rskov"]  )
   dimnames(ans) <- list(names(beta), c("estimate", "std.err.", "signed logLRT", "p-value", "Skovgaard", "p-value"))
   ans <- round(ans, digits=digits)
   
@@ -349,11 +366,17 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
   par.name <- names(coef(fitted))[param]
 
   pl <- .profLik(fitted, param=param)
+  ## check for monotonicity of Skovgaard modified profile likelihood
+  beta.se <- sqrt(diag(as.matrix(vcov(fitted))))[param]
+  beta.mle <- coef(fitted)[param]
+  values <- seq(beta.mle-2*beta.se, beta.mle+2*beta.se, length=100)
+  preds <- predict( pl$smooth.rskovs, x=values )$y
+  check.skov <- all( diff(preds)<0 ) 
 
   up.r <-  up.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1-level)/2))$y
   lo.r <- lo.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1+level)/2))$y
 
-  if(fitted$tau2.mle>0){
+  if(fitted$tau2.mle>0 && fitted$pval.tau2 < fitted$level.tau2 && check.skov){
       up.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1-level)/2))$y
       lo.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1+level)/2))$y
   }
@@ -365,7 +388,7 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
       plot(toplot, type="l", ylim=c(-5,5), ylab="pivot", xlab=par.name, col="blue")
       segments(lo.r, -5.5, lo.r, qnorm((1+level)/2), lty=2, col="blue")
       segments(up.r, -5.5, up.r, qnorm((1-level)/2), lty=2, col="blue")
-      if(fitted$tau2.mle > 0 && fitted$pval.tau2 < fitted$level.tau2){
+      if( fitted$tau2.mle > 0 && fitted$pval.tau2 < fitted$level.tau2 && check.skov ){
           toplot <-  predict( pl$smooth.rskovs, x=values )
           lines(toplot, col="red")
           segments(lo.rskov, -5.5, lo.rskov, qnorm((1+level)/2), lty=2, col="red")
@@ -381,7 +404,7 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
   cat("\nConfidence interval for parameter", par.name, "\n\n")
   print(tab)
 
-  res <- structure(list(lower.rtheta=lo.r, upper.rtheta=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))
+  res <- structure(list(lower.r=lo.r, upper.r=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))
   invisible(res)
 }
 
@@ -436,7 +459,7 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
         ynew <- y-as.matrix(X[,param])%*%values[i]
         Xnew <- as.matrix(X[,-param])
         tau2.constr <- 0.0
-        if(object$tau2.mle>0){
+        if(tau2.mle>0){
             prof.tau2 <- .likTerms(ynew, Xnew, sigma2)$prof.tau2
             tau2.constr <- optimize(prof.tau2, interval=c(0, 1e+4), maximum=TRUE)$maximum
         }
