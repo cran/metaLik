@@ -1,5 +1,5 @@
 export(metaLik, test.metaLik, simulate.metaLik)
-S3method(profile, metaLik)
+S3method(simulate, metaLik)
 S3method(print, metaLik)
 S3method(summary, metaLik)
 S3method(coef, metaLik)

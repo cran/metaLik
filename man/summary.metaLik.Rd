@@ -32,7 +32,7 @@ Function \code{\link{test.metaLik}} allows for hypothesis testing.
 data(education)
 m <- metaLik(y~1, data=education, sigma2=sigma2)
 summary(m)
-## meta-analysis: no significant between-study heterogeneity
+## meta-analysis
 data(albumin)
 m <- metaLik(y~1, data=albumin, sigma2=sigma2)
 summary(m)
@@ -40,7 +40,7 @@ summary(m)
 data(vaccine)
 m <- metaLik(y~latitude, data=vaccine, sigma2=sigma2)
 summary(m)
-## meta-regression: no significant between-study heterogeneity
+## meta-regression
 data(cholesterol)
 m <- metaLik(heart_disease~chol_reduction, data=cholesterol, weights=1/sigma2)
 summary(m)

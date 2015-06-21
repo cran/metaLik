@@ -1,3 +1,9 @@
+Version 0.50.0
+-------------
+- check for monotonicity removed
+- profile.metaLik removed
+- documentation updated
+
 Version 0.41.0
 -------------
 - check for monotonicity of profile curves introduced 

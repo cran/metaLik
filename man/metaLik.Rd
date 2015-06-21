@@ -7,8 +7,7 @@ First- and higher-order likelihood inference in meta-analysis and meta-regressio
 Implements first-order and higher-order likelihood methods for inference in meta-analysis and meta-regression models, as described in Guolo (2012). Higher-order asymptotics refer to the higher-order adjustment to the log-likelihood ratio statistic for inference on a scalar component of interest as proposed by Skovgaard (1996). See Guolo and Varin (2012) for illustrative examples about the usage of \pkg{metaLik} package. 
 }
 \usage{
-metaLik(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2, 
-level.tau2=0.05)
+metaLik(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2)
 }
 \arguments{
 \item{formula}{an object of class \code{"\link{formula}"} (or one that
@@ -24,14 +23,11 @@ level.tau2=0.05)
 \item{offset}{this can be used to specify an a priori known component to be included in the linear predictor during fitting. This should be \code{NULL} or a numeric vector of length equal to the number of cases. One or more \code{\link{offset}} terms can be included in the formula instead or as well, and if more than one are specified their sum is used. See \code{\link{model.offset}}.}
 \item{sigma2}{a vector of within-study estimated variances. The length of the vector must be the same of the number of studies.}
 \item{weights}{a vector of the inverse of within-study estimated variances. The length of the vector must be the same of the number of studies. If \code{sigma2} is supplied, the value of \code{weights} is discarded.}
-\item{level.tau2}{significance level of the Cochran's Q test (Cochran, 1937) for between-study heterogeneity. Default is \code{0.05}. }
 }
 \details{
 Models for \code{metaLik.fit} are specified simbolically. A typical model has the form \code{y ~ x1 + \ldots + xJ}, where \code{y} is the continuous response term and \code{xj} is the j-th covariate available at the aggregated meta-analysis level for each study. The case of no covariates corresponds to the classical meta-analysis model specified as \code{y~1}.
 
 Within-study variances are specified through \code{sigma2}: the rare case of equal within-study variances implies Skovgaard's adjustment reaching a third-order accuracy. 
-
-Higher-order information is supplied only if the Cochran's Q test concludes for a significant between-study heterogeneity. We recommend the user to set values of \code{level.tau2} for the Q test not higher than \code{0.05} because Skovgaard's statistic may become unstable when there is no clear evidence of between-study heterogeneity. Moreover, Skovgaard's statistic is checked for monotonicity and if the check is not passed then only the standard profile likelihood test is computed. \bold{Warning} Since version \code{0.40.0} the Cochran's Q test substitutes the bootstrap score test.
 
 DerSimonian and Laird estimates (DerSimonian and Laird, 1986) are also supplied. 
 }
@@ -47,9 +43,6 @@ An object of class \code{"metaLik"} with the following components:
 \item{max.lik}{the maximum log-likelihood value.}
 \item{beta.mle}{the vector of fixed-effects parameters estimated according to maximum likelihood.}
 \item{tau2.mle}{the maximum likelihood estimate of \eqn{\tau^2}.}
-\item{pval.tau2}{the p-value of the Cochran's Q test for between-study heterogeneity.}
-\item{level.tau2}{the significance level of the Cochran's Q test for between-study heterogeneity.}
-\item{Q}{the value of the Cochran's Q test statistic for between-study heterogeneity.}
 \item{DL}{the vector of fixed-effects parameters estimated according to DerSimonian and Laird's pproach.}
 \item{tau2.DL}{the method of moments estimate of the heterogeneity parameter \eqn{\tau^2}.}
 \item{vcov.DL}{the variance-covariance matrix of the DL parameter estimates.}
@@ -63,8 +56,6 @@ An object of class \code{"metaLik"} with the following components:
 Generic functions \code{\link{coefficients}}, \code{\link{vcov}}, \code{\link{logLik}}, \code{\link{fitted}}, \code{\link{residuals}} can be used to extract fitted model quantities. 
 }
 \references{ 
-Cochran, W. G. (1937). Problems Arising in the Analysis of a Series of Similar Experiments. \emph{Journal of the Royal Statistical Society Supplement} \bold{4}, 102--118.
-
 DerSimonian, R. and Laird, N. (1986). Meta-Analysis in Clinical Trials. \emph{Controlled Clinical Trials} \bold{7}, 177--188.
 
 Guolo, A. (2012). Higher-Order Likelihood Inference in Meta-Analysis and Meta-Regression. \emph{Statistics in Medicine} \bold{31}, 313--327.
@@ -80,15 +71,13 @@ Annamaria Guolo and Cristiano Varin.
 Function \code{\link{summary.metaLik}} for summaries.
 
 Function \code{\link{test.metaLik}} for hypothesis testing.
-
-Function \code{\link{profile.metaLik}} for constructing confidence intervals.
 }
 \examples{
 ## meta-analysis
 data(education)
 m <- metaLik(y~1, data=education, sigma2=sigma2)
 summary(m)
-## meta-analysis: no significant between-study heterogeneity
+## meta-analysis
 data(albumin)
 m <- metaLik(y~1, data=albumin, sigma2=sigma2)
 summary(m)
@@ -96,7 +85,7 @@ summary(m)
 data(vaccine)
 m <- metaLik(y~latitude, data=vaccine, sigma2=sigma2)
 summary(m)
-## meta-regression: no significant between-study heterogeneity
+## meta-regression
 data(cholesterol)
 m <- metaLik(heart_disease~chol_reduction, data=cholesterol, weights=1/sigma2)
 summary(m)

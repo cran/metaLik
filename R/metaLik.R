@@ -69,7 +69,8 @@
     ans
 }
 
-metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2, level.tau2=0.05){
+metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, weights=1/sigma2){
+    
   
   call <- match.call()
   if (missing(data)) 
@@ -123,18 +124,6 @@ metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, wei
   beta.fe <- coef(fit.fe)
   names(beta.fe) <- names(beta.mle)
 
-  ## Cochran Q statistic for heterogeneity
-  w.fe <- diag(1/sigma2)
-  .invcalc <- function (X, W, k){
-      sWX <- sqrt(W) %*% X
-      res.qrs <- qr.solve(sWX, diag(k))
-      return(tcrossprod(res.qrs))
-  }
-  stXWX <- .invcalc(X = X, W = w.fe, k = N)
-  P <- w.fe - w.fe %*% X %*% stXWX %*% crossprod(X, w.fe)
-  Q <- max(0, c(crossprod(y, P) %*% y))
-  pval.tau2 <- ifelse(N - NCOL(X) >= 1, pchisq(Q, df = N - NCOL(X), lower.tail = FALSE), 1)
-
   terms <- .likTerms(y, X, sigma2)
   lik <- terms$lik
   Jmatrix <- terms$Jmatrix
@@ -151,7 +140,7 @@ metaLik <- function(formula, data, subset, contrasts = NULL, offset, sigma2, wei
   colnames(vcov.mle) <- rownames(vcov.mle) <- c(colnames(X), "tau^2")
   
   ## exit
-  m <- structure(list(y=y+offset, X=X, fitted.values=fitted.values, sigma2=sigma2, K=NROW(X), mle=c(beta.mle, tau2.mle), vcov=vcov.mle, max.lik=lik(beta.mle, tau2.mle), beta.mle=beta.mle, tau2.mle=tau2.mle, pval.tau2=pval.tau2, level.tau2=level.tau2, Q=Q, DL=beta.dl, tau2.DL=tau2.dl, vcov.DL=var.dl, call=call, formula=formula, terms=mt,  offset=offset, contrasts = attr(X, "contrasts"), xlevels = .getXlevels(mt, mf), model=mf), class="metaLik")
+  m <- structure(list(y=y+offset, X=X, fitted.values=fitted.values, sigma2=sigma2, K=NROW(X), mle=c(beta.mle, tau2.mle), vcov=vcov.mle, max.lik=lik(beta.mle, tau2.mle), beta.mle=beta.mle, tau2.mle=tau2.mle, DL=beta.dl, tau2.DL=tau2.dl, vcov.DL=var.dl, call=call, formula=formula, terms=mt,  offset=offset, contrasts = attr(X, "contrasts"), xlevels = .getXlevels(mt, mf), model=mf), class="metaLik")
   m
 }
 
@@ -222,7 +211,7 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
   }
   if(missing(param) || is.na(param)){
     param <- 1L
-    warning("\nassumed confidence interval for intercept")
+    warning("\nassumed test for intercept")
   }   
   if(length(param)>1 || param>length(coef(object)) || param<=0 || !is.numeric(param))
     stop("\n'param' must be one single fixed-effects component")
@@ -233,15 +222,8 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
     stop("\n'object' must be a metaLik object")
    
   pl <- .profLik(object, param=param)
-  ## check for monotonicity of Skovgaard modified profile likelihood
-  beta.se <- sqrt(diag(as.matrix(vcov(object))))
-  values <- seq(beta.mle[param]-2*beta.se[param], beta.mle[param]+2*beta.se[param], length=100)
-  preds <- predict( pl$smooth.rskovs, x=values )$y
-  check.skov <- all( diff(preds)<0 ) 
-      
-  r <- r.skov <- predict(pl$smooth.rs, x=value)$y
-  if(object$tau2.mle>0 && object$pval.tau2 < object$level.tau2 && check.skov)
-      r.skov <- predict(pl$smooth.rskovs, x=value)$y
+  r <- predict(pl$smooth.rs, x=value)$y
+  r.skov <- predict(pl$smooth.rskovs, x=value)$y
   
   if(alternative=="less"){
     pval.r <- pnorm(r)
@@ -259,23 +241,15 @@ test.metaLik <- function(object, param=1, value=0, alternative=c("two.sided", "l
     cat("\nSigned profile log-likelihood ratio test for parameter ", names(beta.mle[param]), sep="", "\n")
     cat("\nFirst-order statistic")
     cat("\nr:", formatC(r, digits), ", p-value:", formatC(pval.r, digits), sep="")
-    if(object$tau2.mle>0 && object$pval.tau2 < object$level.tau2 && check.skov){
-        cat("\nSkovgaard's statistic")
-        cat("\nrSkov:", formatC(r.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
-    }
-    else{
-        if( object$tau2.mle==0 || object$pval.tau2 >= object$level.tau2 )
-            cat("\nSkovgaard's statistic not computed because Q test indicates no evidence of between-study heterogeneity")
-        if( (object$tau2.mle>0 && object$pval.tau2 < object$level.tau2) && !check.skov )
-            cat("\nSkovgaard's statistic not computed because the monotonicity check is not passed")
-    }
+    cat("\nSkovgaard's statistic")
+    cat("\nrSkov:", formatC(r.skov, digits), ", p-value:", formatC(pval.rskov, digits), sep="")
     if(alternative=="two.sided")
       cat("\nalternative hypothesis: parameter is different from ", round(value, digits), sep="", "\n")
     else
       cat("\nalternative hypothesis: parameter is ", alternative, " than ", round(value, digits), sep="", "\n")
   }
   ## bye
-  ans <- list(r=r, pvalue.r=pval.r, rskov=r.skov, pvalue.rskov=pval.rskov, check.skov=check.skov)
+  ans <- list(r=r, pvalue.r=pval.r, rskov=r.skov, pvalue.rskov=pval.rskov)
   invisible(ans)
 }
 
@@ -314,30 +288,17 @@ summary.metaLik <- function(object, ...){
   beta <- coef(object)
   nbeta <- length(beta)
   beta.se <- sqrt(diag(as.matrix(vcov(object))))
-  r <- matrix(nrow=nbeta, ncol=5)
+  r <- matrix(nrow=nbeta, ncol=4)
   for(i in 1:nbeta)
     r[i,] <- as.numeric( test.metaLik(object, param=i, print=FALSE) )
-  colnames(r) <- c("r", "pvalue.r", "rskov", "pvalue.rskov", "check.skov")
+  colnames(r) <- c("r", "pvalue.r", "rskov", "pvalue.rskov")##, "check.skov")
   tau2 <- object$tau2.mle
   
   cat("\nLikelihood inference in random-effects meta-analysis models\n")
   cat("\nCall:\n", paste(deparse(object$call), sep = "\n", collapse = "\n"), "\n", sep = "")
   cat("\nEstimated heterogeneity parameter tau2")
-  if(object$tau2.mle > 1e-4)
-      cat(" = ", formatC(unname(object$tau2.mle), digits), sep="")
-   else
-       cat(" < 0.0001")
-   cat("\nTest for heterogeneity Q = ", formatC(unname(object$Q), digits), " (pval", sep="")
-  if(object$pval.tau2 > 1e-4)
-      cat(" = ", formatC(unname(object$pval.tau2), digits), ")", sep="")
-  else
-      cat(" < 0.0001)")
-  check.skov <- all(r[,"check.skov"]==1)
-   if( object$tau2.mle==0 || object$pval.tau2 >= object$level.tau2 )
-       cat("\nSkovgaard's statistic not computed because Q test indicates no evidence of between-study heterogeneity")
-  if( (object$tau2.mle>0 && object$pval.tau2 < object$level.tau2) && !check.skov )
-      cat("\nSkovgaard's statistic not computed because the monotonicity check is not passed")
-  
+  cat(" = ", formatC(unname(object$tau2.mle), digits), sep="")
+ 
   cat("\n\nFixed-effects:\n")
 
   ans <- cbind( beta, beta.se, r[,"r"], r[,"pvalue.r"], r[,"rskov"], r[,"pvalue.rskov"]  )
@@ -347,65 +308,6 @@ summary.metaLik <- function(object, ...){
   print.default(ans, print.gap = 2)
   cat("\nLog-likelihood:", format(round(object$max.lik, digits)), "\n")
   invisible(object)
-}
-
-profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
-
-  if(class(fitted)!="metaLik")
-    stop("\nfunction designed for 'metaLik' objects")
-  if(is.character(param)){
-    pnames <- names(coef(fitted))
-    param <- match(param, pnames, nomatch=NA)
-  }
-  if(missing(param) || is.na(param)){
-    param <- 1L
-        warning("\nassumed confidence interval for intercept")
-  }    
-  if(length(param)>1 || param>length(coef(fitted)) || !is.numeric(param))
-    stop("\n'param' must be one single fixed-effects component")
-  par.name <- names(coef(fitted))[param]
-
-  pl <- .profLik(fitted, param=param)
-  ## check for monotonicity of Skovgaard modified profile likelihood
-  beta.se <- sqrt(diag(as.matrix(vcov(fitted))))[param]
-  beta.mle <- coef(fitted)[param]
-  values <- seq(beta.mle-2*beta.se, beta.mle+2*beta.se, length=100)
-  preds <- predict( pl$smooth.rskovs, x=values )$y
-  check.skov <- all( diff(preds)<0 ) 
-
-  up.r <-  up.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1-level)/2))$y
-  lo.r <- lo.rskov <- predict(pl$smooth.rs.inv, x=qnorm((1+level)/2))$y
-
-  if(fitted$tau2.mle>0 && fitted$pval.tau2 < fitted$level.tau2 && check.skov){
-      up.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1-level)/2))$y
-      lo.rskov <- predict(pl$smooth.rskovs.inv, x=qnorm((1+level)/2))$y
-  }
- 
-  if(display){
-      pts <- seq(-5, 5, by=.5)
-      values <- fitted$beta.mle[param] + pts * sqrt(fitted$vcov[param,param])
-      toplot <- predict( pl$smooth.rs, x=values )
-      plot(toplot, type="l", ylim=c(-5,5), ylab="pivot", xlab=par.name, col="blue")
-      segments(lo.r, -5.5, lo.r, qnorm((1+level)/2), lty=2, col="blue")
-      segments(up.r, -5.5, up.r, qnorm((1-level)/2), lty=2, col="blue")
-      if( fitted$tau2.mle > 0 && fitted$pval.tau2 < fitted$level.tau2 && check.skov ){
-          toplot <-  predict( pl$smooth.rskovs, x=values )
-          lines(toplot, col="red")
-          segments(lo.rskov, -5.5, lo.rskov, qnorm((1+level)/2), lty=2, col="red")
-          segments(up.rskov, -5.5, up.rskov, qnorm((1-level)/2), lty=2, col="red")
-          legend(mean(values), 4, c("First-order", "Skovgaard"), cex=0.8, col=c("blue", "red"), lty=c(1,1), bty="n")
-      }
-      abline(h=qnorm((1-level)/2), lty=2, col='lightgrey')
-      abline(h=qnorm((1+level)/2), lty=2, col='lightgrey')
-  }
-  tab <- matrix(c(lo.r, up.r, lo.rskov, up.rskov), ncol=2, byrow=TRUE)
-  rownames(tab) <- c("signed logLRT", "Skovgaard")
-  colnames(tab) <- c(paste(100*(1-level)/2, " %", sep=""), paste(100*(1+level)/2, " %", sep=""))
-  cat("\nConfidence interval for parameter", par.name, "\n\n")
-  print(tab)
-
-  res <- structure(list(lower.r=lo.r, upper.r=up.r, lower.rskov=lo.rskov, upper.rskov=up.rskov))
-  invisible(res)
 }
 
 .profLik <- function(object, param=1){
@@ -474,22 +376,22 @@ profile.metaLik <- function(fitted, param=1, level=0.95, display=TRUE, ...){
 
         if(is.finite(lrt) && lrt>0){
             rs[i] <- sign(beta.mle[param]-beta.constr[param])*sqrt(lrt)
-            if(tau2.mle>0 && object$pval.tau2 < object$level.tau2){
-                us[i] <- try(.computeU(beta.mle, tau2.mle, beta.constr, tau2.constr, param), silent=TRUE)
-                if(inherits(us[i], "try-error"))
-                    us[i] <- NA
-            }
+            us[i] <- try(.computeU(beta.mle, tau2.mle, beta.constr, tau2.constr, param), silent=TRUE)
+            if(inherits(us[i], "try-error"))
+                us[i] <- NA
         }
     }
     smooth.rs <- smooth.rskovs <-  smooth.spline( x=values, y=rs )
     smooth.rs.inv <- smooth.rskovs.inv <- smooth.spline( y=values, x=rs )
-    if(tau2.mle>0 && object$pval.tau2 < object$level.tau2){
-        rskovs <- rs+1/rs*log(us/rs)
-        smooth.rskovs <- smooth.spline( x=values, y=rskovs )
-        smooth.rskovs.inv <- smooth.spline( y=values, x=rskovs )
-    }
+    rskovs <- rs+1/rs*log(us/rs)
+    smooth.rskovs <- smooth.spline( x=values, y=rskovs )
+    smooth.rskovs.inv <- smooth.spline( y=values, x=rskovs )
 
     return( list( smooth.rs=smooth.rs, smooth.rs.inv=smooth.rs.inv, smooth.rskovs=smooth.rskovs, smooth.rskovs.inv=smooth.rskovs.inv) )
+}
+
+simulate <- function(object, ...) {
+  UseMethod("simulate")
 }
 
 simulate.metaLik <- function(object, nsim = 1, seed = NULL, DL = FALSE, ...){
