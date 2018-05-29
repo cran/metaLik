@@ -7,13 +7,12 @@ Simulate meta-analysis outcomes
 Simulate one or more meta-analysis outcomes from a fitted \code{\link{metaLik}} object.
 }
 \usage{
-\method{simulate}{metaLik}(object, nsim=1, seed=NULL, DL=FALSE, ...)
+\method{simulate}{metaLik}(object, nsim=1, seed=NULL, ...)
 }
 \arguments{
 \item{object}{an object of class \code{"\link{metaLik}"}.}
 \item{nsim}{number of outcome vectors to simulate. Default is \code{1}.}
 \item{seed}{an object specifying if and how the random number generator should be initialized, see \code{\link{simulate}} for details.}
-\item{DL}{logical, whether simulation is based on DerSimonian and Laird estimate (DerSimonian and Laird, 1986). Default is \code{FALSE}, corresponding to simulation from maximum likelihood estimate.} 
 \item{...}{additional optional arguments.}
 }
 \value{

@@ -390,11 +390,7 @@ summary.metaLik <- function(object, ...){
     return( list( smooth.rs=smooth.rs, smooth.rs.inv=smooth.rs.inv, smooth.rskovs=smooth.rskovs, smooth.rskovs.inv=smooth.rskovs.inv) )
 }
 
-simulate <- function(object, ...) {
-  UseMethod("simulate")
-}
-
-simulate.metaLik <- function(object, nsim = 1, seed = NULL, DL = FALSE, ...){
+simulate.metaLik <- function(object, nsim = 1, seed = NULL, ...){
 
     if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) 
         runif(1)
@@ -406,14 +402,8 @@ simulate.metaLik <- function(object, nsim = 1, seed = NULL, DL = FALSE, ...){
         RNGstate <- structure(seed, kind = as.list(RNGkind()))
         on.exit(assign(".Random.seed", R.seed, envir = .GlobalEnv))
     }
-    if(!DL){
-        ftd <- fitted(object)
-        tau2 <- object$tau2.mle
-    }
-    else{ ## DL
-        ftd <- object$X %*% object$DL
-        tau2 <- object$tau2.DL
-    }
+    ftd <- fitted(object)
+    tau2 <- object$tau2.mle
     n <- length(ftd)
     nm <- names(ftd)
 

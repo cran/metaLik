@@ -1,10 +1,13 @@
-export(metaLik, test.metaLik, simulate.metaLik)
-S3method(simulate, metaLik)
-S3method(print, metaLik)
-S3method(summary, metaLik)
-S3method(coef, metaLik)
-S3method(vcov, metaLik)
-S3method(logLik, metaLik)
-S3method(model.matrix, metaLik)
-S3method(residuals, metaLik)
+import("stats")
+
+export("metaLik", "test.metaLik")
+
+S3method("print", "metaLik")
+S3method("summary", "metaLik")
+S3method("coef", "metaLik")
+S3method("vcov", "metaLik")
+S3method("logLik", "metaLik")
+S3method("model.matrix", "metaLik")
+S3method("residuals", "metaLik")
+S3method("simulate", "metaLik")
 
